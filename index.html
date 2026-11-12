@@ -75,6 +75,17 @@ table.stat td:not(:first-child){text-align:right}tr.tot td{font-weight:700;backg
  .app.nav-open .sidebar{transform:none}.app.nav-open .overlay{display:block;position:fixed;inset:0;background:#0005;z-index:1400}
  .content{padding:10px}.top-user span{display:none}.grid,.g3{grid-template-columns:1fr}.rk{grid-template-columns:24px 120px 1fr 50px}.rk-p,.rk .badge{display:none}.hb{grid-template-columns:100px 1fr 50px}}
 
+/* тайлан */
+.k-teal{border-top-color:#0f9d8f}
+.note-red{background:#fff1ef;border:1px solid #f5c2bb;color:#7a1f1f;border-radius:8px;padding:10px 12px;margin:8px 0}
+.file-keep{background:#f6f8fb;border-radius:8px;padding:8px 12px;margin-top:8px}
+.add-req{background:#f6f8fb;border-radius:10px;padding:4px 12px 10px;margin:8px 0}
+table.perf th.rq{font-weight:600;font-size:12.5px;min-width:110px}table.perf th small{font-weight:400;opacity:.85}
+td.cell{font-size:12.5px;font-weight:600;text-align:center;vertical-align:middle}
+.cell.c-ok{background:#ddf3e6;color:#11683a}.cell.c-sent{background:#e3edfb;color:#1d4f91}.cell.c-ret{background:#fdf0d5;color:#8a5a00}.cell.c-none{background:#f3f4f6;color:#6b7280}.cell.c-late{background:#fde4e1;color:#a52a1d}
+.legend-row{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}.legend-row .cell{padding:4px 10px;border-radius:6px;font-size:12.5px;font-weight:600}
+.pbar{display:inline-block;width:90px;height:10px;background:#eef2f7;border-radius:5px;overflow:hidden;vertical-align:middle;margin-right:6px}.pbar span{display:block;height:100%;background:#16834a}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -101,8 +112,10 @@ table.stat td:not(:first-child){text-align:right}tr.tot td{font-weight:700;backg
     <div class="nav-group open"><button class="nav-head">03 · Улсын хяналт шалгалт <span class="chev">▶</span></button><div class="nav-sub">
       <a data-go="inspForm">Шалгалт бүртгэх</a><a data-go="inspList">Шалгалтын жагсаалт</a><a data-go="plans">Шалгалтын төлөвлөгөө</a></div></div>
     <a class="nav-item" data-go="viol">04 · Зөрчил, шаардлага</a>
-    <a class="nav-item" data-go="stats">05 · Тайлан, статистик</a>
-    <a class="nav-item" data-go="users">06 · Байгууллага, хэрэглэгч</a>
+    <div class="nav-group open"><button class="nav-head">05 · Тайлан <span class="chev">▶</span></button><div class="nav-sub">
+      <a data-go="repForm">Тайлан илгээх</a><a data-go="repList">Тайлангууд</a><a data-go="repPerf">Тайлангийн гүйцэтгэл</a><a data-go="repReq">Тайлангийн хуваарь</a></div></div>
+    <a class="nav-item" data-go="stats">06 · Статистик</a>
+    <a class="nav-item" data-go="users">07 · Байгууллага, хэрэглэгч</a>
   </nav>
   <div class="ver">Хувилбар 1.0 © ОБЕГ</div>
 </aside>
@@ -117,6 +130,10 @@ table.stat td:not(:first-child){text-align:right}tr.tot td{font-weight:700;backg
     <section data-page="inspForm" class="card" id="inspFormBox"></section>
     <section data-page="inspList" class="card" id="inspListBox"></section>
     <section data-page="viol" class="card" id="violBox"></section>
+    <section data-page="repForm" class="card" id="repFormBox"></section>
+    <section data-page="repList" class="card" id="repListBox"></section>
+    <section data-page="repPerf" class="card" id="repPerfBox"></section>
+    <section data-page="repReq" class="card" id="repReqBox"></section>
     <section data-page="stats" id="statsBox"></section>
     <section data-page="plans" class="card" id="plansBox"></section>
     <section data-page="users" id="usersBox"></section>
@@ -153,6 +170,8 @@ const LISTS = {
   targetTypes: ["Төрийн байгууллага", "Аж ахуйн нэгж", "Боловсролын байгууллага", "Эрүүл мэндийн байгууллага", "Үйлдвэр", "Олон нийтийн газар", "Орон сууц", "Бусад"],
   requirementTypes: ["Улсын байцаагчийн албан шаардлага", "Акт", "Зөвлөмж"],
   penaltyTypes: ["Байхгүй", "Сануулга", "Торгууль", "Үйл ажиллагааг түр зогсоох"],
+  reportTypes: ["Хяналт шалгалтын тайлан", "Гамшиг, ослын тайлан", "Үйл ажиллагааны тайлан", "Сургалт, дадлагын тайлан", "Бусад тайлан"],
+  reportPeriods: ["I улирал", "II улирал", "III улирал", "IV улирал", "I хагас жил", "II хагас жил", "Жилийн", "1-р сар", "2-р сар", "3-р сар", "4-р сар", "5-р сар", "6-р сар", "7-р сар", "8-р сар", "9-р сар", "10-р сар", "11-р сар", "12-р сар"],
   checklist: [
     "Гамшгаас хамгаалах төлөвлөгөө батлагдсан, шинэчлэгдсэн эсэх",
     "Гамшгаас хамгаалах мэргэжлийн анги, бүлэг байгуулагдсан эсэх",
@@ -206,7 +225,7 @@ function options(list, selected, empty) { return (empty !== undefined ? `<option
 function orgOptions(selected, empty) { return (empty !== undefined ? `<option value="">${esc(empty)}</option>` : "") + S.orgs.map(o => `<option value="${o.id}"${String(o.id) === String(selected) ? " selected" : ""}>${esc(o.name)}</option>`).join(""); }
 function yearOptions(sel) { let h = ""; for (let y = new Date().getFullYear() + 1; y >= 2020; y--) h += `<option value="${y}"${y === Number(sel) ? " selected" : ""}>${y} он</option>`; return h; }
 function badge(text) {
-  const c = { "Бүртгэгдсэн": "b-blue", "Баталгаажсан": "b-green", "Буцаасан": "b-red", "Хаагдсан": "b-gray", "Биелээгүй": "b-red", "Хэрэгжиж байна": "b-amber", "Арилгасан": "b-green", "Хугацаа хэтэрсэн": "b-red", "Зөрчилтэй": "b-amber", "Зөрчилгүй": "b-green" }[text] || "b-gray";
+  const c = { "Бүртгэгдсэн": "b-blue", "Илгээсэн": "b-blue", "Идэвхтэй": "b-green", "Баталгаажсан": "b-green", "Буцаасан": "b-red", "Хаагдсан": "b-gray", "Биелээгүй": "b-red", "Хэрэгжиж байна": "b-amber", "Арилгасан": "b-green", "Хугацаа хэтэрсэн": "b-red", "Зөрчилтэй": "b-amber", "Зөрчилгүй": "b-green" }[text] || "b-gray";
   return `<span class="badge ${c}">${esc(text)}</span>`;
 }
 function yearRange(y) { return [`${y}-01-01`, `${Number(y) + 1}-01-01`]; }
@@ -271,7 +290,11 @@ const PAGES = {
   inspForm: { title: "Хяналт шалгалт бүртгэх", roles: ["admin", "org"], load: () => openInspectionForm() },
   inspList: { title: "Хяналт шалгалтын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadInspections() },
   viol: { title: "Зөрчил, шаардлагын биелэлт", roles: ["admin", "viewer", "org"], load: () => loadViolations() },
-  stats: { title: "Тайлан, статистик", roles: ["admin", "viewer", "org"], load: () => loadStats() },
+  repForm: { title: "Тайлан илгээх", roles: ["admin", "org"], load: () => openReportForm() },
+  repList: { title: "Тайлангууд", roles: ["admin", "viewer", "org"], load: () => loadReports() },
+  repPerf: { title: "Тайлангийн гүйцэтгэл", roles: ["admin", "viewer", "org"], load: () => loadReportPerf() },
+  repReq: { title: "Тайлангийн хуваарь", roles: ["admin"], load: () => loadReqAdmin() },
+  stats: { title: "Статистик", roles: ["admin", "viewer", "org"], load: () => loadStats() },
   plans: { title: "Шалгалтын төлөвлөгөө", roles: ["admin"], load: () => loadPlans() },
   users: { title: "Байгууллага, хэрэглэгч", roles: ["admin"], load: () => loadUsers() }
 };
@@ -820,6 +843,217 @@ document.addEventListener("click", e => { const t = e.target.closest("[data-vio-
 
 </script>
 <script>
+/* ===== js/reports.js ===== */
+"use strict";
+/* =====================================================================
+   ТАЙЛАН: илгээх, хянах (баталгаажуулах, буцаах, устгах), гүйцэтгэл, хуваарь
+   ===================================================================== */
+let REP = { rows: [], reqs: [], editing: null };
+const REPORT_ACCEPT = ".doc,.docx,.pdf,.xls,.xlsx,.jpg,.jpeg,.png";
+const reqLabel = r => `${r.period} · ${r.report_type}${r.due_date ? " (хугацаа " + r.due_date + ")" : ""}`;
+
+async function fetchReqs(year) {
+  const { data, error } = await S.sb.from("report_requirements").select("*").eq("year", Number(year)).order("due_date");
+  if (error) throw error; return data || [];
+}
+
+/* ---------- Тайлан илгээх ---------- */
+async function openReportForm(row) {
+  REP.editing = row || null;
+  const year = row ? row.report_year : new Date().getFullYear();
+  const box = $("repFormBox");
+  box.innerHTML = '<p class="muted">Ачаалж байна...</p>';
+  let reqs = [];
+  try { reqs = (await fetchReqs(year)).filter(r => r.active || (row && r.id === row.requirement_id)); } catch (e) { box.innerHTML = `<p class="error">Алдаа: ${esc(safeError(e))}</p>`; return; }
+  REP.reqs = reqs;
+  box.innerHTML = `
+    <h2>${row ? (row.status === "Буцаасан" ? "Буцаагдсан тайланг засаж дахин илгээх" : "Тайлан засах") : "Тайлан илгээх"}</h2>
+    ${row?.status === "Буцаасан" && row.review_comment ? `<div class="note-red"><b>Буцаасан шалтгаан:</b> ${esc(row.review_comment)}</div>` : ""}
+    ${isAdmin() ? `<label>Байгууллага *</label><select id="r_org">${orgOptions(row?.org_id, "— сонгох —")}</select>` : ""}
+    <label>Тайлангийн хуваарь *</label>
+    <select id="r_req">${reqs.length ? `<option value="">— сонгох —</option>` + reqs.map(r => `<option value="${r.id}"${row?.requirement_id === r.id ? " selected" : ""}>${esc(reqLabel(r))}</option>`).join("") : '<option value="">Энэ онд тайлангийн хуваарь тогтоогоогүй байна</option>'}</select>
+    <label>Тайлангийн нэр</label><input id="r_title" value="${esc(row?.title)}" placeholder="Жишээ: Архангай аймгийн I улирлын хяналт шалгалтын тайлан">
+    <label>Тайлбар</label><textarea id="r_note">${esc(row?.note)}</textarea>
+    <label>Тайлангийн файл * (Word, PDF, Excel, JPG — олон файл сонгож болно, нэг файл 20 MB хүртэл)</label>
+    <input id="r_files" type="file" multiple accept="${REPORT_ACCEPT}">
+    ${row?.files?.length ? `<div class="file-keep"><p class="muted">Хавсаргасан файлууд (хасах бол чагтыг авна):</p>${row.files.map((f, i) => `<label class="chk"><input type="checkbox" class="r_keep" data-i="${i}" checked> ${esc(fileLabel(f))}</label>`).join("")}</div>` : ""}
+    <div class="actions"><button id="r_save">${row ? "Хадгалаад илгээх" : "Илгээх"}</button>${row ? '<button class="secondary" id="r_cancel">Болих</button>' : ""}</div>
+    <div id="r_msg" class="message"></div>`;
+  $("r_save").onclick = saveReport;
+  if (row) $("r_cancel").onclick = () => go("repList");
+}
+async function saveReport() {
+  const org_id = isAdmin() ? Number($("r_org").value) : S.profile.org_id;
+  const req = REP.reqs.find(r => String(r.id) === $("r_req").value);
+  if (!org_id || !req) return message("r_msg", "Байгууллага болон тайлангийн хуваарийг сонгоно уу.", "error");
+  const kept = REP.editing ? REP.editing.files.filter((f, i) => document.querySelector(`.r_keep[data-i="${i}"]`)?.checked) : [];
+  const newList = Array.from($("r_files").files || []);
+  const bad = newList.find(f => !/\.(docx?|pdf|xlsx?|jpe?g|png)$/i.test(f.name));
+  if (bad) return message("r_msg", `"${bad.name}" файлын төрөл зөвшөөрөгдөөгүй. Word, PDF, Excel, JPG, PNG файл оруулна уу.`, "error");
+  if (!kept.length && !newList.length) return message("r_msg", "Дор хаяж нэг файл хавсаргана уу.", "error");
+  if (!REP.editing && REP.rows.some(r => r.org_id === org_id && r.requirement_id === req.id))
+    return message("r_msg", "Энэ хуваарийн тайланг аль хэдийн илгээсэн байна. Жагсаалтаас засна уу.", "error");
+  $("r_save").disabled = true; message("r_msg", "Файл байршуулж байна...");
+  try {
+    const uploaded = await uploadFiles(newList, "reports");
+    const data = { org_id, requirement_id: req.id, report_year: req.year, report_type: req.report_type, period: req.period,
+      title: $("r_title").value.trim() || null, note: $("r_note").value.trim() || null, files: [...kept, ...uploaded] };
+    if (isAdmin() && REP.editing) data.status = "Илгээсэн";
+    const q = REP.editing ? S.sb.from("reports").update(data).eq("id", REP.editing.id) : S.sb.from("reports").insert(data);
+    const { error } = await q;
+    if (error) throw (/reports_one_per_req|duplicate/.test(error.message || "") ? new Error("Энэ хуваарийн тайланг аль хэдийн илгээсэн байна.") : error);
+    message("r_msg", "Тайлан амжилттай илгээгдлээ.", "success");
+    setTimeout(() => go("repList"), 700);
+  } catch (e) { message("r_msg", "Алдаа: " + safeError(e), "error"); } finally { $("r_save").disabled = false; }
+}
+
+/* ---------- Тайлангийн жагсаалт, хяналт ---------- */
+async function loadReports() {
+  const box = $("repListBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters">
+      <div><label>Он</label><select id="rf_year">${yearOptions(new Date().getFullYear())}</select></div>
+      ${seeAll() ? `<div><label>Байгууллага</label><select id="rf_org">${orgOptions("", "Бүгд")}</select></div>` : ""}
+      <div><label>Төрөл</label><select id="rf_type">${options(LISTS.reportTypes, "", "Бүгд")}</select></div>
+      <div><label>Төлөв</label><select id="rf_status">${options(["Илгээсэн", "Баталгаажсан", "Буцаасан"], "", "Бүгд")}</select></div>
+      <div class="f-btns"><button class="green" id="rf_xlsx">Excel</button></div></div>
+      <div id="rf_sum" class="mini-kpis"></div><div id="rf_info" class="message"></div><div class="table-wrap" id="rf_table"></div>`;
+    box.dataset.ready = 1;
+    ["rf_org", "rf_type", "rf_status"].forEach(id => $(id) && ($(id).onchange = renderReports));
+    $("rf_year").onchange = fetchReports;
+    $("rf_xlsx").onclick = () => exportExcel("tailan.xlsx", [{ name: "Тайлан", rows: [["Байгууллага", "Он", "Хугацаа", "Төрөл", "Нэр", "Илгээсэн", "Хоцорсон", "Төлөв", "Тайлбар"],
+      ...filteredReports().map(r => [orgName(r.org_id), r.report_year, r.period, r.report_type, r.title || "", dtstr(r.submitted_at), isLate(r) ? "Тийм" : "", r.status, r.review_comment || ""])] }]);
+  }
+  await fetchReports();
+}
+async function fetchReports() {
+  message("rf_info", "Ачаалж байна...");
+  const y = Number($("rf_year").value);
+  const [r, q] = await Promise.all([S.sb.from("reports").select("*").eq("report_year", y).order("submitted_at", { ascending: false }), S.sb.from("report_requirements").select("*").eq("year", y)]);
+  if (r.error || q.error) return message("rf_info", "Алдаа: " + safeError(r.error || q.error), "error");
+  REP.rows = r.data || []; REP.reqs = q.data || []; renderReports();
+}
+function isLate(r) { const q = REP.reqs.find(x => x.id === r.requirement_id); return !!(q?.due_date && String(r.submitted_at).slice(0, 10) > q.due_date); }
+function filteredReports() {
+  const og = $("rf_org")?.value || "", tp = $("rf_type").value, st = $("rf_status").value;
+  return REP.rows.filter(r => (!og || String(r.org_id) === og) && (!tp || r.report_type === tp) && (!st || r.status === st));
+}
+function renderReports() {
+  const list = filteredReports(), c = s => list.filter(r => r.status === s).length;
+  $("rf_sum").innerHTML = [["Нийт", list.length], ["Хянагдаж байгаа", c("Илгээсэн")], ["Баталгаажсан", c("Баталгаажсан")], ["Буцаасан", c("Буцаасан")], ["Хоцорч ирүүлсэн", list.filter(isLate).length]]
+    .map(([k, v]) => `<div class="mk"><span>${k}</span><b>${fmt(v)}</b></div>`).join("");
+  message("rf_info", "");
+  $("rf_table").innerHTML = `<table><tr><th>Байгууллага</th><th>Тайлан</th><th>Илгээсэн</th><th>Файл</th><th>Төлөв</th><th>Үйлдэл</th></tr>
+    ${list.map(r => `<tr><td><b>${esc(orgName(r.org_id))}</b></td><td>${esc(r.period)} · ${esc(r.report_type)}${r.title ? "<br><span class='muted'>" + esc(r.title) + "</span>" : ""}</td>
+      <td>${esc(dtstr(r.submitted_at))}${isLate(r) ? '<br><span class="badge b-amber">хоцорсон</span>' : ""}</td><td>${fileButtons(r.files)}</td>
+      <td>${badge(r.status)}${r.review_comment && r.status === "Буцаасан" ? `<br><span class="muted">${esc(r.review_comment)}</span>` : ""}</td>
+      <td class="acts">${repActions(r)}</td></tr>`).join("") || '<tr><td colspan="6" class="muted">Тайлан алга.</td></tr>'}</table>`;
+}
+function repActions(r) {
+  let h = "";
+  if (isOrg() && r.status !== "Баталгаажсан") h += `<button class="sm secondary" data-rep-edit="${r.id}">${r.status === "Буцаасан" ? "Засаж дахин илгээх" : "Засах"}</button>`;
+  if (isAdmin()) {
+    if (r.status !== "Баталгаажсан") h += `<button class="sm green" data-rep-st="${r.id}|Баталгаажсан">Баталгаажуулах</button>`;
+    if (r.status !== "Буцаасан") h += `<button class="sm warn" data-rep-st="${r.id}|Буцаасан">Буцаах</button>`;
+  }
+  if (isAdmin() || (isOrg() && r.status !== "Баталгаажсан")) h += `<button class="sm danger" data-rep-del="${r.id}">Устгах</button>`;
+  return h;
+}
+function openReturnDialog(id) {
+  openModal("Тайлан буцаах", `<label>Буцаах шалтгаан *</label><textarea id="rt_text" placeholder="Жишээ: Хавсралт 2 дутуу байна"></textarea>
+    <div class="actions"><button class="warn" id="rt_ok">Буцаах</button><button class="secondary" onclick="closeModal()">Болих</button></div><div id="rt_msg" class="message"></div>`);
+  $("rt_ok").onclick = async () => {
+    const t = $("rt_text").value.trim(); if (!t) return message("rt_msg", "Шалтгаанаа бичнэ үү.", "error");
+    const { error } = await S.sb.from("reports").update({ status: "Буцаасан", review_comment: t, reviewed_by: S.user.id, reviewed_at: new Date().toISOString() }).eq("id", id);
+    if (error) return message("rt_msg", "Алдаа: " + safeError(error), "error");
+    closeModal(); fetchReports();
+  };
+}
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-rep-edit],[data-rep-st],[data-rep-del]"); if (!t) return;
+  const find = id => REP.rows.find(x => String(x.id) === String(id));
+  if (t.dataset.repEdit) { go("repForm", { noLoad: true }); openReportForm(find(t.dataset.repEdit)); }
+  if (t.dataset.repSt) {
+    const [id, st] = t.dataset.repSt.split("|");
+    if (st === "Буцаасан") return openReturnDialog(id);
+    const { error } = await S.sb.from("reports").update({ status: st, review_comment: null, reviewed_by: S.user.id, reviewed_at: new Date().toISOString() }).eq("id", id);
+    if (error) return alert("Алдаа: " + safeError(error)); fetchReports();
+  }
+  if (t.dataset.repDel) {
+    const r = find(t.dataset.repDel);
+    if (!confirm(`${orgName(r.org_id)} — ${r.period} ${r.report_type} тайланг устгах уу? Буцаах боломжгүй.`)) return;
+    const { error } = await S.sb.from("reports").delete().eq("id", r.id);
+    if (error) return alert("Алдаа: " + safeError(error)); fetchReports();
+  }
+});
+
+/* ---------- Тайлангийн гүйцэтгэл ---------- */
+async function loadReportPerf() {
+  const box = $("repPerfBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters"><div><label>Он</label><select id="rp_year">${yearOptions(new Date().getFullYear())}</select></div>
+      <div class="f-btns"><button class="green" id="rp_xlsx">Excel</button></div><div id="rp_msg" class="message"></div></div>
+      <div class="legend-row">${["Баталгаажсан", "Илгээсэн", "Буцаасан", "Ирүүлээгүй", "Хугацаа хэтэрсэн"].map(s => `<span class="cell c-${cellCls(s)}">${s}</span>`).join("")}</div>
+      <div class="table-wrap" id="rp_table"></div>`;
+    box.dataset.ready = 1; $("rp_year").onchange = loadReportPerf;
+    $("rp_xlsx").onclick = () => exportExcel(`tailan_guitsetgel_${$("rp_year").value}.xlsx`, [{ name: "Гүйцэтгэл", rows: REP.perfRows || [] }]);
+  }
+  message("rp_msg", "Ачаалж байна...");
+  const y = Number($("rp_year").value);
+  const [r, q] = await Promise.all([S.sb.from("reports").select("*").eq("report_year", y), S.sb.from("report_requirements").select("*").eq("year", y).eq("active", true).order("due_date")]);
+  if (r.error || q.error) return message("rp_msg", "Алдаа: " + safeError(r.error || q.error), "error");
+  message("rp_msg", "");
+  const reqs = q.data || [], reps = r.data || [];
+  if (!reqs.length) { $("rp_table").innerHTML = `<p class="muted">${y} онд тайлангийн хуваарь тогтоогоогүй байна.${isAdmin() ? " «Тайлангийн хуваарь» хэсгээс нэмнэ үү." : ""}</p>`; return; }
+  const orgs = seeAll() ? S.orgs : S.orgs.filter(o => o.id === S.profile.org_id);
+  const rows = orgs.map(o => {
+    const cells = reqs.map(q => { const rp = reps.find(x => x.org_id === o.id && x.requirement_id === q.id);
+      const st = rp ? rp.status : (q.due_date && q.due_date < today() ? "Хугацаа хэтэрсэн" : "Ирүүлээгүй");
+      return { st, late: rp && q.due_date && String(rp.submitted_at).slice(0, 10) > q.due_date, rp }; });
+    const due = reqs.filter(q => !q.due_date || q.due_date <= today()).length || reqs.length;
+    const ok = cells.filter(c => c.st === "Баталгаажсан").length, sent = cells.filter(c => c.rp).length;
+    return { o, cells, ok, sent, pct: Math.round(ok / reqs.length * 100), duePct: Math.round(Math.min(sent, due) / due * 100) };
+  }).sort((a, b) => b.pct - a.pct || b.sent - a.sent || a.o.sort_order - b.o.sort_order);
+  REP.perfRows = [["№", "Байгууллага", ...reqs.map(reqLabel), "Ирүүлсэн", "Баталгаажсан", "Гүйцэтгэл %"],
+    ...rows.map((x, i) => [i + 1, x.o.name, ...x.cells.map(c => c.st + (c.late ? " (хоцорсон)" : "")), x.sent, x.ok, x.pct])];
+  $("rp_table").innerHTML = `<table class="perf"><tr><th>№</th><th>Байгууллага</th>${reqs.map(q => `<th class="rq">${esc(q.period)}<br><small>${esc(q.report_type)}</small>${q.due_date ? `<br><small>⏱ ${esc(q.due_date)}</small>` : ""}</th>`).join("")}<th>Гүйцэтгэл</th></tr>
+    ${rows.map((x, i) => `<tr><td>${i + 1}</td><td><b>${esc(x.o.name)}</b></td>${x.cells.map(c => `<td class="cell c-${cellCls(c.st)}">${esc(c.st)}${c.late ? "<br><small>хоцорсон</small>" : ""}</td>`).join("")}
+      <td><div class="pbar"><span style="width:${x.pct}%"></span></div><b>${x.pct}%</b> <span class="muted">(${x.ok}/${reqs.length})</span></td></tr>`).join("")}</table>`;
+}
+function cellCls(s) { return { "Баталгаажсан": "ok", "Илгээсэн": "sent", "Буцаасан": "ret", "Ирүүлээгүй": "none", "Хугацаа хэтэрсэн": "late" }[s] || "none"; }
+
+/* ---------- Тайлангийн хуваарь (админ) ---------- */
+async function loadReqAdmin() {
+  const box = $("repReqBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters"><div><label>Он</label><select id="rq_year">${yearOptions(new Date().getFullYear())}</select></div><div id="rq_msg" class="message"></div></div>
+      <p class="muted">Аймгууд тухайн онд ирүүлэх тайлангуудыг энд тогтооно. Гүйцэтгэл үүнээс тооцогдоно.</p>
+      <div class="grid g4 add-req"><div><label>Тайлангийн төрөл</label><select id="rq_type">${options(LISTS.reportTypes, LISTS.reportTypes[0])}</select></div>
+        <div><label>Хугацаа</label><select id="rq_period">${options(LISTS.reportPeriods, LISTS.reportPeriods[0])}</select></div>
+        <div><label>Ирүүлэх эцсийн огноо</label><input type="date" id="rq_due"></div><div><label>&nbsp;</label><button id="rq_add">+ Нэмэх</button></div></div>
+      <div class="table-wrap" id="rq_table"></div>`;
+    box.dataset.ready = 1; $("rq_year").onchange = loadReqAdmin; $("rq_add").onclick = addReq;
+  }
+  let reqs; try { reqs = await fetchReqs($("rq_year").value); } catch (e) { return message("rq_msg", "Алдаа: " + safeError(e), "error"); }
+  $("rq_table").innerHTML = `<table><tr><th>Хугацаа</th><th>Тайлангийн төрөл</th><th>Эцсийн огноо</th><th>Төлөв</th><th>Үйлдэл</th></tr>
+    ${reqs.map(r => `<tr><td>${esc(r.period)}</td><td>${esc(r.report_type)}</td><td>${esc(r.due_date || "—")}</td><td>${r.active ? badge("Идэвхтэй") : badge("Хаагдсан")}</td>
+      <td class="acts"><button class="sm secondary" data-rq-tog="${r.id}|${r.active ? 0 : 1}">${r.active ? "Идэвхгүй болгох" : "Идэвхжүүлэх"}</button><button class="sm danger" data-rq-del="${r.id}">Устгах</button></td></tr>`).join("") || '<tr><td colspan="5" class="muted">Хуваарь алга.</td></tr>'}</table>`;
+}
+async function addReq() {
+  const body = { year: Number($("rq_year").value), report_type: $("rq_type").value, period: $("rq_period").value, due_date: $("rq_due").value || null };
+  const { error } = await S.sb.from("report_requirements").insert(body);
+  message("rq_msg", error ? "Алдаа: " + safeError(error) : "Нэмэгдлээ.", error ? "error" : "success"); if (!error) loadReqAdmin();
+}
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-rq-tog],[data-rq-del]"); if (!t) return;
+  if (t.dataset.rqTog) { const [id, v] = t.dataset.rqTog.split("|"); const { error } = await S.sb.from("report_requirements").update({ active: v === "1" }).eq("id", id); if (error) return alert("Алдаа: " + safeError(error)); }
+  if (t.dataset.rqDel) { if (!confirm("Энэ хуваарийг устгах уу? Холбогдох тайлангууд устахгүй, хуваарьгүй болно.")) return;
+    const { error } = await S.sb.from("report_requirements").delete().eq("id", t.dataset.rqDel); if (error) return alert("Алдаа: " + safeError(error)); }
+  loadReqAdmin();
+});
+
+</script>
+<script>
 /* ===== js/dashboard.js ===== */
 "use strict";
 /* =====================================================================
@@ -839,12 +1073,15 @@ const periodOptions = `<option value="all">Бүтэн жил</option><option val
 
 async function fetchAll(y, p) {
   const [a, b] = periodRange(y, p);
-  const [d, i, pl] = await Promise.all([
+  const [d, i, pl, rp, rq] = await Promise.all([
     S.sb.from("disasters").select("*").gte("started_at", a).lt("started_at", b).order("started_at", { ascending: false }),
     S.sb.from("inspections").select("*").gte("inspection_date", a).lt("inspection_date", b),
-    S.sb.from("inspection_plans").select("*").eq("year", Number(y))
+    S.sb.from("inspection_plans").select("*").eq("year", Number(y)),
+    S.sb.from("reports").select("id,org_id,requirement_id,status").eq("report_year", Number(y)),
+    S.sb.from("report_requirements").select("id,due_date").eq("year", Number(y)).eq("active", true)
   ]);
-  for (const r of [d, i, pl]) if (r.error) throw r.error;
+  for (const r of [d, i, pl, rp, rq]) if (r.error) throw r.error;
+  DB.reps = rp.data || []; DB.reqs = rq.data || [];
   const ids = (i.data || []).map(x => x.id);
   let v = { data: [] };
   if (ids.length) { v = await S.sb.from("violations").select("*").in("inspection_id", ids); if (v.error) throw v.error; }
@@ -884,9 +1121,16 @@ function renderKpis() {
     ["blue", "Хяналт шалгалт", fmt(DB.ins.length), `зөрчилтэй ${DB.ins.filter(x => x.result === "Зөрчилтэй").length}`, "inspList"],
     ["purple", "Илэрсэн зөрчил", fmt(v.length), `торгууль ${moneyShort(v.reduce((a, x) => a + num(x.fine_amount), 0))}`, "viol"],
     ["green", "Арилгасан зөрчил", fmt(fixed), v.length ? `${Math.round(fixed / v.length * 100)}% биелэлт` : "—", "viol"],
+    ...reportKpi(),
     ["crit", "Хугацаа хэтэрсэн шаардлага", fmt(late), late ? "яаралтай хянах" : "хэтэрсэн шаардлага алга", "viol"]
   ];
   $("db_kpis").innerHTML = k.map(([c, t, val, sub, pg]) => `<div class="kpi k-${c}" data-go="${pg}"><div class="kpi-t">${t}</div><div class="kpi-v">${val}</div><div class="kpi-s">${sub}</div></div>`).join("");
+}
+function reportKpi() {
+  const nOrg = seeAll() ? S.orgs.length : 1, due = DB.reqs.filter(q => !q.due_date || q.due_date <= today()).length;
+  const ok = DB.reps.filter(r => r.status === "Баталгаажсан").length, wait = DB.reps.filter(r => r.status === "Илгээсэн").length;
+  const exp = due * nOrg;
+  return [["teal", "Тайлан ирүүлэлт", exp ? `${Math.round(Math.min(DB.reps.length, exp) / exp * 100)}%` : "—", `баталгаажсан ${ok}, хянагдаж буй ${wait}`, "repPerf"]];
 }
 function hbars(items, colorFn) {
   const max = Math.max(1, ...items.map(x => x[1]));
