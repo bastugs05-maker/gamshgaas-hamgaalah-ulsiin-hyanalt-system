@@ -189,7 +189,7 @@ table.compact td,table.compact th{padding:6px 8px}
     <a class="nav-item" data-go="stats">06 · Статистик</a>
     <a class="nav-item" data-go="users">07 · Байгууллага, хэрэглэгч</a>
   </nav>
-  <div class="ver">Хувилбар 1.4 © ОБЕГ</div>
+  <div class="ver">Хувилбар 1.5 © ОБЕГ</div>
 </aside>
 <div class="overlay" id="navOverlay"></div>
 <div class="main">
@@ -313,11 +313,20 @@ function openModal(title, html, wide) {
 function closeModal() { $("modal").classList.add("hidden"); $("modalBody").innerHTML = ""; }
 
 /* ---------- Файл ---------- */
+const FILE_EXT = [".jpg", ".jpeg", ".png", ".heic", ".pdf", ".doc", ".docx", ".xls", ".xlsx"];
+const FILE_ACCEPT = "image/*,.jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx";
+const FILE_HINT = '<span class="muted">— Word, Excel, PDF, JPG/PNG (нэг файл 20 MB хүртэл, олныг зэрэг сонгож болно)</span>';
 async function uploadFiles(fileList, kind) {
   const paths = [];
   for (const f of Array.from(fileList || [])) {
+    const e = (f.name.match(/\.[A-Za-z0-9]{1,8}$/) || [""])[0].toLowerCase();
+    if (!FILE_EXT.includes(e)) throw new Error(`"${f.name}" — зөвхөн Word, Excel, PDF, JPG/PNG файл хавсаргана.`);
+    if (f.size > 20 * 1024 * 1024) throw new Error(`"${f.name}" файл 20 MB-аас их байна.`);
+  }
+  for (const f of Array.from(fileList || [])) {
     if (f.size > 20 * 1024 * 1024) throw new Error(`"${f.name}" файл 20 MB-аас их байна.`);
     const ext = (f.name.match(/\.[A-Za-z0-9]{1,8}$/) || [""])[0].toLowerCase();
+    if (!FILE_EXT.includes(ext)) throw new Error(`"${f.name}" — зөвхөн Word, Excel, PDF, JPG/PNG файл хавсаргана.`);
     const base = f.name.slice(0, f.name.length - ext.length).replace(/[^A-Za-z0-9А-Яа-яӨөҮүЁё_-]+/g, "_").slice(0, 60) || "file";
     const path = `${S.user.id}/${kind}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}__${base}${ext}`;
     const { error } = await S.sb.storage.from(BUCKET).upload(path, f, { contentType: f.type || undefined });
@@ -327,9 +336,11 @@ async function uploadFiles(fileList, kind) {
   return paths;
 }
 function fileLabel(p) { const n = String(p).split("/").pop(); return n.includes("__") ? n.split("__").slice(1).join("__") : n; }
+function fileIcon(p) { const e = (String(p).match(/\.([a-z0-9]+)$/i) || ["", ""])[1].toLowerCase();
+  return e === "pdf" ? "📕" : ["doc", "docx"].includes(e) ? "📘" : ["xls", "xlsx"].includes(e) ? "📗" : ["jpg", "jpeg", "png", "heic"].includes(e) ? "🖼️" : "📎"; }
 function fileButtons(paths) {
   if (!paths || !paths.length) return '<span class="muted">—</span>';
-  return paths.map(p => `<button class="link-btn" data-file="${esc(p)}">📎 ${esc(fileLabel(p))}</button>`).join(" ");
+  return paths.map(p => `<button class="link-btn" data-file="${esc(p)}">${fileIcon(p)} ${esc(fileLabel(p))}</button>`).join(" ");
 }
 async function openFile(path) {
   const w = window.open("", "_blank");
@@ -358,13 +369,13 @@ function tableHtml(rows) { return `<table>${rows.map((r, i) => `<tr>${r.map(c =>
 /* ---------- Цэс, хуудас ---------- */
 const PAGES = {
   dash: { title: "Нэгдсэн Dashboard", roles: ["admin", "viewer", "org"], load: () => loadDashboard() },
-  disForm: { title: "Гамшиг, осол бүртгэх", roles: ["admin", "org"], load: () => openDisasterForm() },
+  disForm: { title: "Гамшиг, осол бүртгэх", roles: ["org"], load: () => openDisasterForm() },
   disList: { title: "Гамшиг, ослын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadDisasters() },
   risk: { title: "Эрсдэлтэй цэгүүд", roles: ["admin", "viewer", "org"], load: () => loadRiskPage() },
-  inspForm: { title: "Хяналт шалгалт бүртгэх", roles: ["admin", "org"], load: () => openInspectionForm() },
+  inspForm: { title: "Хяналт шалгалт бүртгэх", roles: ["org"], load: () => openInspectionForm() },
   inspList: { title: "Хяналт шалгалтын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadInspections() },
   viol: { title: "Зөрчил, шаардлагын биелэлт", roles: ["admin", "viewer", "org"], load: () => loadViolations() },
-  repForm: { title: "Тайлан илгээх", roles: ["admin", "org"], load: () => openReportForm() },
+  repForm: { title: "Тайлан илгээх", roles: ["org"], load: () => openReportForm() },
   repList: { title: "Тайлангууд", roles: ["admin", "viewer", "org"], load: () => loadReports() },
   repPerf: { title: "Тайлангийн гүйцэтгэл", roles: ["admin", "viewer", "org"], load: () => loadReportPerf() },
   repReq: { title: "Тайлангийн хуваарь", roles: ["admin"], load: () => loadReqAdmin() },
@@ -499,7 +510,7 @@ function openDisasterForm(row) {
     <h3>Хариу арга хэмжээ</h3>
     <div class="checks">${LISTS.responseActions.map(a => `<label class="chk"><input type="checkbox" value="${esc(a)}"${(d.response_actions || []).includes(a) ? " checked" : ""}> ${esc(a)}</label>`).join("")}</div>
     <div class="grid">${n("forces_people", "Ажилласан хүч (хүн)")}${n("forces_vehicles", "Техник (тоо)")}</div>
-    <label>Фото зураг, нотлох баримт (олон файл сонгож болно)</label><input id="d_files" type="file" multiple accept="image/*,.pdf,.doc,.docx">
+    <label>Фото зураг, нотлох баримт ${FILE_HINT}</label><input id="d_files" type="file" multiple accept="${FILE_ACCEPT}">
     ${row && row.files?.length ? `<p class="muted">Одоо байгаа файл: ${fileButtons(row.files)}</p>` : ""}
     <div class="actions"><button id="d_save">${row ? "Хадгалах" : "Бүртгэх"}</button>${row ? '<button class="secondary" id="d_cancel">Болих</button>' : ""}</div>
     <div id="d_msg" class="message"></div>`;
@@ -582,7 +593,7 @@ function renderDisasters() {
 }
 function disActions(d) {
   let h = "";
-  if ((isOrg() && !["Баталгаажсан", "Хаагдсан"].includes(d.status)) || isAdmin()) h += `<button class="sm secondary" data-dis-edit="${d.id}">Засах</button>`;
+  if (isOrg() && !["Баталгаажсан", "Хаагдсан"].includes(d.status)) h += `<button class="sm secondary" data-dis-edit="${d.id}">Засах</button>`;
   if (isAdmin()) {
     if (d.status !== "Баталгаажсан") h += `<button class="sm green" data-dis-st="${d.id}|Баталгаажсан">Баталгаажуулах</button>`;
     if (d.status !== "Хаагдсан") h += `<button class="sm secondary" data-dis-st="${d.id}|Хаагдсан">Хаах</button>`;
@@ -688,7 +699,7 @@ async function openInspectionForm(row, viols) {
       ${LISTS.checklist.map((q, i) => `<tr><td>${esc(q)}</td><td><select class="i_ck" data-q="${i}">${options(["Тийм", "Үгүй", "Хамааралгүй"], ans(q), "—")}</select></td></tr>`).join("")}</table>
     <div class="grid">
       <div><label>Шалгалтын үр дүн *</label><select id="i_result">${options(["Зөрчилгүй", "Зөрчилтэй"], d.result, "— сонгох —")}</select></div>
-      <div><label>Удирдамж, акт, зураг (олон файл)</label><input id="i_files" type="file" multiple accept="image/*,.pdf,.doc,.docx"></div>
+      <div><label>Удирдамж, акт, зураг ${FILE_HINT}</label><input id="i_files" type="file" multiple accept="${FILE_ACCEPT}"></div>
     </div>
     ${row && row.files?.length ? `<p class="muted">Одоо байгаа файл: ${fileButtons(row.files)}</p>` : ""}
     <div id="i_violSec" class="viol-sec hidden"><h3>Илэрсэн зөрчил, улсын байцаагчийн шаардлага</h3><div id="i_viols"></div>
@@ -798,7 +809,7 @@ function renderInspections() {
 }
 function insActions(i) {
   let h = "";
-  if ((isOrg() && i.status !== "Баталгаажсан") || isAdmin()) h += `<button class="sm secondary" data-ins-edit="${i.id}">Засах</button>`;
+  if (isOrg() && i.status !== "Баталгаажсан") h += `<button class="sm secondary" data-ins-edit="${i.id}">Засах</button>`;
   if (isAdmin()) {
     if (i.status !== "Баталгаажсан") h += `<button class="sm green" data-ins-st="${i.id}|Баталгаажсан">Баталгаажуулах</button>`;
     if (i.status === "Бүртгэгдсэн") h += `<button class="sm warn" data-ins-st="${i.id}|Буцаасан">Буцаах</button>`;
@@ -894,7 +905,7 @@ function openFollowup(x) {
       <div><label>Арилгасан огноо</label><input type="date" id="fu_date" value="${esc(x.fixed_at || "")}"></div></div>
     ${num(x.fine_amount) ? `<label class="chk"><input type="checkbox" id="fu_paid"${x.fine_paid ? " checked" : ""}> Торгууль (${money(x.fine_amount)}) төлөгдсөн</label>` : ""}
     <label>Тэмдэглэл (гүйцэтгэлийн шалгалтын дүгнэлт)</label><textarea id="fu_note">${esc(x.followup_note || "")}</textarea>
-    <label>Зөрчил арилгасан нотлох баримт (зураг, баримт)</label><input type="file" id="fu_files" multiple accept="image/*,.pdf,.doc,.docx">
+    <label>Зөрчил арилгасан нотлох баримт ${FILE_HINT}</label><input type="file" id="fu_files" multiple accept="${FILE_ACCEPT}">
     ${x.evidence_files?.length ? `<p class="muted">Одоо байгаа: ${fileButtons(x.evidence_files)}</p>` : ""}
     <div class="actions"><button id="fu_save">Хадгалах</button><button class="secondary" onclick="closeModal()">Болих</button></div><div id="fu_msg" class="message"></div>`);
   $("fu_status").onchange = () => { if ($("fu_status").value === "Арилгасан" && !$("fu_date").value) $("fu_date").value = today(); };
@@ -920,7 +931,7 @@ document.addEventListener("click", e => { const t = e.target.closest("[data-vio-
    ТАЙЛАН: илгээх, хянах (баталгаажуулах, буцаах, устгах), гүйцэтгэл, хуваарь
    ===================================================================== */
 let REP = { rows: [], reqs: [], editing: null };
-const REPORT_ACCEPT = ".doc,.docx,.pdf,.xls,.xlsx,.jpg,.jpeg,.png";
+const REPORT_ACCEPT = FILE_ACCEPT;
 const reqLabel = r => `${r.period} · ${r.report_type}${r.due_date ? " (хугацаа " + r.due_date + ")" : ""}`;
 
 async function fetchReqs(year) {
@@ -1217,7 +1228,7 @@ async function loadRiskPage() {
   const box = $("riskBox");
   if (!box.dataset.ready) {
     box.innerHTML = `<div class="card">
-      <div class="card-h map-h"><span>Эрсдэлтэй цэгүүд</span>${isAdmin() || isOrg() ? '<button id="rk_new">+ Шинэ цэг бүртгэх</button>' : ""}</div>
+      <div class="card-h map-h"><span>Эрсдэлтэй цэгүүд</span>${isOrg() ? '<button id="rk_new">+ Шинэ цэг бүртгэх</button>' : ""}</div>
       <p class="muted">Усанд осолддог газар, ослын аюултай замын хэсэг, үерт автдаг хороолол гэх мэт байнга анхаарах шаардлагатай газрыг бүртгэнэ. Нэгдсэн Dashboard-ын газрын зураг дээр "!" тэмдгээр харагдана.</p>
       <div class="filters">
         ${seeAll() ? `<div><label>Аймаг</label><select id="rk_aimag">${options(AIMAGS, "", "Бүгд")}</select></div>` : ""}
@@ -1246,7 +1257,7 @@ function filteredRisk() {
   const ai = $("rk_aimag")?.value || "", ty = $("rk_type").value, lv = $("rk_level").value;
   return RISK.rows.filter(p => (!ai || p.aimag === ai) && (!ty || p.risk_type === ty) && (!lv || p.level === lv));
 }
-function canEditRisk(p) { return isAdmin() || (isOrg() && p.org_id === S.profile.org_id); }
+function canEditRisk(p) { return isOrg() && p.org_id === S.profile.org_id; }
 function renderRiskPage() {
   if (!RISK.ok) message("rk_info", "Эрсдэлтэй цэгийн хүснэгт үүсээгүй байна. Supabase-д 4_risk.sql-ийг ажиллуулна уу.", "error");
   const list = filteredRisk(), ai = $("rk_aimag")?.value || "", ty = $("rk_type").value;
@@ -1255,11 +1266,11 @@ function renderRiskPage() {
     ${list.map(p => `<tr><td><b>${esc(p.name)}</b>${p.description ? "<br><span class='muted'>" + esc(p.description) + "</span>" : ""}</td><td>${esc(p.risk_type)}</td>
       <td><span class="lvl" style="--c:${RISK_LEVEL_COLOR[p.level]}">${esc(p.level)}</span></td><td>${esc([p.aimag, p.soum].filter(Boolean).join(" / "))}<br><span class="muted">${p.lat}, ${p.lng}</span></td>
       <td>${esc(p.season || "—")}</td><td>${esc(orgName(p.org_id))}</td>
-      <td class="acts">${canEditRisk(p) ? `<button class="sm secondary" data-rk-edit="${p.id}">Засах</button><button class="sm danger" data-rk-del="${p.id}">Устгах</button>` : ""}</td></tr>`).join("")
+      <td class="acts">${canEditRisk(p) ? `<button class="sm secondary" data-rk-edit="${p.id}">Засах</button>` : ""}${canEditRisk(p) || isAdmin() ? `<button class="sm danger" data-rk-del="${p.id}">Устгах</button>` : ""}</td></tr>`).join("")
       || '<tr><td colspan="7" class="muted">Эрсдэлтэй цэг бүртгэгдээгүй байна.</td></tr>'}</table>`;
   const hist = RISK.hist.filter(x => (!ai || x.aimag === ai) && (!ty || x.disaster_type === ty));
   RISK.hot = computeHotspots(hist);
-  const canAdd = isAdmin() || isOrg();
+  const canAdd = isOrg();
   $("rk_hot").innerHTML = `<table><tr><th>Төрөл</th><th>Байршил</th><th>Тоо</th><th>Хохирол</th><th>Хугацаа</th>${canAdd ? "<th></th>" : ""}</tr>
     ${RISK.hot.map((h, i) => `<tr><td><i class="dot" style="background:${typeColor(h.type)}"></i> <b>${esc(h.type)}</b></td><td>${esc([h.aimag, h.soum].filter(Boolean).join(" / "))}<br><span class="muted">${h.lat}, ${h.lng}</span></td>
       <td><b>${h.n}</b> удаа</td><td>${h.deaths ? "нас барсан " + h.deaths : ""}${h.deaths && h.injured ? ", " : ""}${h.injured ? "гэмтсэн " + h.injured : ""}${!h.deaths && !h.injured ? "—" : ""}</td>
@@ -1298,7 +1309,7 @@ function openRiskForm(p) {
     </div>
     <label>Тайлбар (яагаад эрсдэлтэй вэ)</label><textarea id="r_desc">${esc(d.description)}</textarea>
     <label>Авсан / авах арга хэмжээ</label><textarea id="r_meas" placeholder="Анхааруулах тэмдэг, хашаа, эргүүл, сургалт...">${esc(d.measures)}</textarea>
-    <label>Зураг</label><input id="r_files" type="file" multiple accept="image/*,.pdf">
+    <label>Зураг, баримт ${FILE_HINT}</label><input id="r_files" type="file" multiple accept="${FILE_ACCEPT}">
     ${RISK.editing?.files?.length ? `<p class="muted">Одоо байгаа: ${fileButtons(RISK.editing.files)}</p>` : ""}
     <div class="actions"><button id="r_save">${RISK.editing ? "Хадгалах" : "Бүртгэх"}</button><button class="secondary" id="r_cancel">Болих</button></div>
     <div id="r_msg" class="message"></div>`, true);
