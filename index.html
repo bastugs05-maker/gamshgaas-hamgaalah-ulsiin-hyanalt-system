@@ -2,6 +2,12 @@
 <html lang="mn"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Гамшгаас хамгаалах улсын хяналтын нэгдсэн цахим систем</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14284b">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ГХУХ хяналт"><meta name="application-name" content="ГХУХ хяналт">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#1f2937}
@@ -172,6 +178,29 @@ table.compact td,table.compact th{padding:6px 8px}
 .myrep-t{flex:1}
 .nav-badge{display:inline-block;background:#e03131;color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700;margin-left:6px;line-height:18px}
 @media(max-width:640px){.myrep-i{flex-wrap:wrap}.myrep-t{flex-basis:100%}}
+/* ---- PWA ---- */
+.install-bar{display:flex;align-items:center;gap:8px;background:#14284b;color:#fff;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:14px}
+.install-bar span{flex:1}
+.install-bar .secondary{background:transparent;color:#fff;border:1px solid #ffffff55}
+.offline-bar{background:#fff4e5;border:1px solid #f5c26b;color:#7a4b00;border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:14px}
+.nav-install{display:block;width:calc(100% - 24px);margin:8px 12px;background:#ffffff14;color:#fff;border:1px solid #ffffff33;border-radius:8px;padding:9px;font-size:14px;cursor:pointer}
+.install-btn{display:block;margin:10px auto 0}
+ol.steps{padding-left:20px;line-height:1.7}
+body.standalone .topbar{padding-top:max(8px,env(safe-area-inset-top))}
+.modal-box{box-sizing:border-box;min-width:0}
+.modal-h{gap:10px}.modal-h h2{min-width:0;overflow-wrap:anywhere}.modal-h .icon-btn{flex:none}
+@media(max-width:640px){.modal{padding:10px}.modal-box{padding:16px}.modal-h h2{font-size:20px}}
+/* Утсан дээр хажуу тийш хальж гарахгүй */
+.dash-row>*,.sgrid>*,.dgrid>*{min-width:0}
+.map-sels{min-width:0;max-width:100%}
+.map-sel{max-width:100%;min-width:0}
+@media(max-width:640px){
+  .dash-row{grid-template-columns:minmax(0,1fr)!important}
+  .map-h>span:first-child{flex-basis:100%}
+  .map-sels{width:100%}.map-sels .map-sel{flex:1 1 140px}
+  .lg-tg{margin-left:0}
+  html,body{overflow-x:hidden}
+}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -187,6 +216,7 @@ table.compact td,table.compact th{padding:6px 8px}
   <button id="loginBtn" class="full">Нэвтрэх</button>
   <button id="forgotBtn" type="button" class="link-btn">Нууц үгээ мартсан уу?</button>
   <div id="loginStatus" class="message"></div>
+  <button type="button" class="install-btn link-btn hidden" data-install>📲 Утсандаа апп болгож суулгах</button>
 </div></section>
 
 <div id="app" class="app hidden">
@@ -204,13 +234,16 @@ table.compact td,table.compact th{padding:6px 8px}
     <a class="nav-item" data-go="stats">06 · Статистик</a>
     <a class="nav-item" data-go="users">07 · Байгууллага, хэрэглэгч</a>
   </nav>
-  <div class="ver">Хувилбар 1.8 © ОБЕГ</div>
+  <button type="button" class="nav-install hidden" data-install>📲 Утсанд суулгах</button>
+  <div class="ver">Хувилбар 1.9 © ОБЕГ</div>
 </aside>
 <div class="overlay" id="navOverlay"></div>
 <div class="main">
   <div class="topbar"><button id="navToggle" class="icon-btn" title="Цэс">☰</button><div class="top-title" id="pageTitle"></div>
     <div class="top-user"><span id="userInfo"></span><button id="pwOpenBtn" class="secondary">Нууц үг солих</button><button id="logoutBtn" class="secondary">Гарах</button></div></div>
   <div class="content">
+    <div id="installBar" class="install-bar hidden"><span>📲 Энэ системийг утсандаа апп болгож суулгавал нүүр дэлгэцээс шууд нээгдэнэ.</span><button class="sm" data-install>Суулгах</button><button class="sm secondary" id="installBarX" title="Хаах">✕</button></div>
+    <div id="offlineBar" class="offline-bar hidden">⚠ Интернэт холболт тасарсан байна. Холбогдсоны дараа мэдээлэл хадгалагдана.</div>
     <section data-page="dash" id="dashBox"></section>
     <section data-page="disForm" class="card" id="disFormBox"></section>
     <section data-page="disList" class="card" id="disListBox"></section>
@@ -1725,6 +1758,59 @@ async function loadUsers() {
     <div class="card"><div class="card-h">Аудитын бүртгэл (сүүлийн 100)</div><div class="table-wrap"><table><tr><th>Огноо</th><th>Хэрэглэгч</th><th>Үйлдэл</th><th>Бүртгэл</th><th>Тайлбар</th></tr>
       ${(a.data || []).map(x => `<tr><td>${esc(dtstr(x.at))}</td><td>${esc(who(x.user_id))}</td><td>${esc(act[x.action] || x.action)}</td><td>${esc(tname[x.table_name] || x.table_name)} #${esc(x.row_id)}</td><td>${esc(x.summary || "")}</td></tr>`).join("") || '<tr><td colspan="5" class="muted">Бүртгэл алга.</td></tr>'}</table></div></div>`;
 }
+
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   УТСАНД АПП ШИГ СУУЛГАХ (PWA)
+   ===================================================================== */
+const PWA = { prompt: null };
+const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isMobile = () => /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent) || isIOS();
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+
+function pwaRefresh() {
+  const can = !isStandalone() && (PWA.prompt || isMobile());
+  document.querySelectorAll("[data-install]").forEach(b => { if (b.closest("#installBar")) return; b.classList.toggle("hidden", !can); });
+  $("installBar")?.classList.toggle("hidden", !(can && isMobile() && lsGet("ghuh_install_x") !== "1"));
+  document.body.classList.toggle("standalone", isStandalone());
+}
+function installHelp() {
+  const ios = isIOS();
+  openModal("Утсандаа апп болгож суулгах", `
+    ${ios ? `<p><b>iPhone / iPad (Safari):</b></p><ol class="steps">
+        <li>Энэ хуудсыг <b>Safari</b>-аар нээнэ.</li>
+        <li>Доод хэсгийн <b>Хуваалцах</b> товч (дээшээ сумтай дөрвөлжин ⬆️) дээр дарна.</li>
+        <li>Жагсаалтаас <b>«Add to Home Screen» / «Нүүр дэлгэцэд нэмэх»</b>-ийг сонгоно.</li>
+        <li>Баруун дээд буланд <b>Add / Нэмэх</b> дарна.</li></ol>`
+    : `<p><b>Android (Chrome, Samsung Internet):</b></p><ol class="steps">
+        <li>Баруун дээд буланд <b>⋮</b> (гурван цэг) дээр дарна.</li>
+        <li><b>«Апп суулгах» / «Install app»</b> эсвэл <b>«Нүүр дэлгэцэд нэмэх» / «Add to Home screen»</b>-ийг сонгоно.</li>
+        <li><b>Суулгах / Install</b> дарна.</li></ol>`}
+    <p class="muted">Суулгасны дараа утасны нүүр дэлгэц дээр <b>«ГХУХ хяналт»</b> дүрс гарч ирнэ. Түүгээр нээхэд хөтчийн хаягийн мөргүйгээр бүтэн дэлгэцээр ажиллана. Шинэ хувилбар гарахад автоматаар шинэчлэгдэнэ.</p>`);
+}
+async function doInstall() {
+  if (PWA.prompt) {
+    PWA.prompt.prompt();
+    const r = await PWA.prompt.userChoice.catch(() => null);
+    PWA.prompt = null; pwaRefresh();
+    if (r && r.outcome === "accepted") return;
+  }
+  installHelp();
+}
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); PWA.prompt = e; pwaRefresh(); });
+window.addEventListener("appinstalled", () => { PWA.prompt = null; lsSet("ghuh_install_x", "1"); pwaRefresh(); });
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-install]")) { e.preventDefault(); doInstall(); }
+  if (e.target.closest("#installBarX")) { lsSet("ghuh_install_x", "1"); pwaRefresh(); }
+});
+function netRefresh() { $("offlineBar")?.classList.toggle("hidden", navigator.onLine !== false); }
+window.addEventListener("online", netRefresh); window.addEventListener("offline", netRefresh);
+document.addEventListener("DOMContentLoaded", () => { pwaRefresh(); netRefresh(); });
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(() => { });
 
 </script>
 <script>
