@@ -158,6 +158,21 @@ table.compact td,table.compact th{padding:6px 8px}
   .dbody{gap:12px}.dleg{font-size:12px}
 }
 
+/* ---- Тайлангийн төлөв ---- */
+.rst{display:flex;flex-direction:column;gap:2px;font-size:13px;min-width:170px}
+.rst>b{font-size:14px}.rst>span{color:#64748b;font-size:12px}
+.rst-ok>b{color:#16834a}.rst-wait>b{color:#2f5fb5}.rst-ret>b{color:#c0392b}
+.rst-why{background:#fdecea;border-left:3px solid #c0392b;padding:4px 8px;border-radius:4px;color:#7a1d14;margin-top:3px}
+.rst-todo{color:#c0392b!important;font-weight:600}
+.myrep{margin-bottom:16px}
+.myrep-sum{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}
+.ms{padding:8px 14px;border-radius:10px;font-size:14px}.ms b{font-size:18px;margin-left:4px}
+.ms-ok{background:#e7f6ec;color:#16834a}.ms-wait{background:#e8effb;color:#2f5fb5}.ms-ret{background:#fdecea;color:#c0392b}
+.myrep-i{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-top:1px solid #eef1f5}
+.myrep-t{flex:1}
+.nav-badge{display:inline-block;background:#e03131;color:#fff;border-radius:10px;padding:0 7px;font-size:11px;font-weight:700;margin-left:6px;line-height:18px}
+@media(max-width:640px){.myrep-i{flex-wrap:wrap}.myrep-t{flex-basis:100%}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -189,7 +204,7 @@ table.compact td,table.compact th{padding:6px 8px}
     <a class="nav-item" data-go="stats">06 · Статистик</a>
     <a class="nav-item" data-go="users">07 · Байгууллага, хэрэглэгч</a>
   </nav>
-  <div class="ver">Хувилбар 1.7 © ОБЕГ</div>
+  <div class="ver">Хувилбар 1.8 © ОБЕГ</div>
 </aside>
 <div class="overlay" id="navOverlay"></div>
 <div class="main">
@@ -385,6 +400,15 @@ const PAGES = {
 };
 const allowed = k => PAGES[k] && PAGES[k].roles.includes(role());
 function refreshNav() { document.querySelectorAll("#sideNav [data-go]").forEach(a => a.style.display = allowed(a.dataset.go) ? "" : "none"); }
+/* Аймагт буцаагдсан тайлангийн тоог цэсэн дээр улаанаар харуулна */
+async function refreshRepBadge() {
+  const a = document.querySelector('#sideNav [data-go="repList"]'); if (!a || !isOrg()) return;
+  const { data } = await S.sb.from("reports").select("id,status").eq("status", "Буцаасан");
+  const n = (data || []).length; let b = a.querySelector(".nav-badge");
+  if (!n) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement("span"); b.className = "nav-badge"; a.appendChild(b); }
+  b.textContent = n; b.title = `${n} тайлан буцаагдсан`;
+}
 let currentPage = null;
 function go(k, opts) {
   if (!allowed(k)) k = "dash";
@@ -430,7 +454,7 @@ async function showApp() {
   S.orgs = og.data || []; S.orgById = Object.fromEntries(S.orgs.map(o => [o.id, o]));
   $("loginSection").classList.add("hidden"); $("app").classList.remove("hidden");
   $("userInfo").textContent = (S.profile.full_name || S.user.email) + " · " + ({ admin: "Админ", viewer: "Удирдлага", org: "Байгууллага" }[role()] || "");
-  refreshNav();
+  refreshNav(); refreshRepBadge();
   go(location.hash.slice(1) || "dash");
   if (PW_RECOVERY) openPw(true, "Нууц үг сэргээх холбоосоор орлоо. Шинэ нууц үгээ оруулна уу.");
   else if (!S.user.user_metadata?.pw_changed) openPw(true, "Аюулгүй байдлын үүднээс анхны нууц үгээ өөрийн нууц үгээр солино уу.");
@@ -1013,7 +1037,14 @@ async function fetchReports() {
   const y = Number($("rf_year").value);
   const [r, q] = await Promise.all([S.sb.from("reports").select("*").eq("report_year", y).order("submitted_at", { ascending: false }), S.sb.from("report_requirements").select("*").eq("year", y)]);
   if (r.error || q.error) return message("rf_info", "Алдаа: " + safeError(r.error || q.error), "error");
-  REP.rows = r.data || []; REP.reqs = q.data || []; renderReports();
+  REP.rows = r.data || []; REP.reqs = q.data || []; renderReports(); refreshRepBadge();
+}
+/* Тайлангийн төлөвийг аймагт ойлгомжтой харуулах */
+function repStatusCell(r, full) {
+  const when = r.reviewed_at ? dtstr(r.reviewed_at) : "";
+  if (r.status === "Баталгаажсан") return `<div class="rst rst-ok"><b>✅ Баталгаажсан</b><span>Ерөнхий газар баталгаажуулсан${when ? " · " + esc(when) : ""}</span></div>`;
+  if (r.status === "Буцаасан") return `<div class="rst rst-ret"><b>↩️ Буцаасан</b><span>${when ? esc(when) : ""}</span>${r.review_comment ? `<div class="rst-why"><b>Шалтгаан:</b> ${esc(r.review_comment)}</div>` : ""}${full && isOrg() ? `<span class="rst-todo">Засаж дахин илгээнэ үү</span>` : ""}</div>`;
+  return `<div class="rst rst-wait"><b>⏳ Хянагдаж байна</b><span>${r.review_comment ? "Засаж дахин илгээсэн" : "Илгээсэн"} · ${esc(dtstr(r.submitted_at))}</span></div>`;
 }
 function isLate(r) { const q = REP.reqs.find(x => x.id === r.requirement_id); return !!(q?.due_date && String(r.submitted_at).slice(0, 10) > q.due_date); }
 function filteredReports() {
@@ -1022,13 +1053,13 @@ function filteredReports() {
 }
 function renderReports() {
   const list = filteredReports(), c = s => list.filter(r => r.status === s).length;
-  $("rf_sum").innerHTML = [["Нийт", list.length], ["Хянагдаж байгаа", c("Илгээсэн")], ["Баталгаажсан", c("Баталгаажсан")], ["Буцаасан", c("Буцаасан")], ["Хоцорч ирүүлсэн", list.filter(isLate).length]]
+  $("rf_sum").innerHTML = [["Нийт", list.length], ["Хянагдаж байна", c("Илгээсэн")], ["Баталгаажсан", c("Баталгаажсан")], ["Буцаасан", c("Буцаасан")], ["Хоцорч ирүүлсэн", list.filter(isLate).length]]
     .map(([k, v]) => `<div class="mk"><span>${k}</span><b>${fmt(v)}</b></div>`).join("");
   message("rf_info", "");
   $("rf_table").innerHTML = `<table><tr><th>Байгууллага</th><th>Тайлан</th><th>Илгээсэн</th><th>Файл</th><th>Төлөв</th><th>Үйлдэл</th></tr>
     ${list.map(r => `<tr><td><b>${esc(orgName(r.org_id))}</b></td><td>${esc(r.period)} · ${esc(r.report_type)}${r.title ? "<br><span class='muted'>" + esc(r.title) + "</span>" : ""}</td>
       <td>${esc(dtstr(r.submitted_at))}${isLate(r) ? '<br><span class="badge b-amber">хоцорсон</span>' : ""}</td><td>${fileButtons(r.files)}</td>
-      <td>${badge(r.status)}${r.review_comment && r.status === "Буцаасан" ? `<br><span class="muted">${esc(r.review_comment)}</span>` : ""}</td>
+      <td>${repStatusCell(r, true)}</td>
       <td class="acts">${repActions(r)}</td></tr>`).join("") || '<tr><td colspan="6" class="muted">Тайлан алга.</td></tr>'}</table>`;
 }
 function repActions(r) {
@@ -1398,7 +1429,7 @@ async function fetchAll(y, p) {
     S.sb.from("disasters").select("*").gte("started_at", a).lt("started_at", b).order("started_at", { ascending: false }),
     S.sb.from("inspections").select("*").gte("inspection_date", a).lt("inspection_date", b),
     S.sb.from("inspection_plans").select("*").eq("year", Number(y)),
-    S.sb.from("reports").select("id,org_id,requirement_id,status").eq("report_year", Number(y)),
+    S.sb.from("reports").select("id,org_id,requirement_id,status,report_type,period,title,submitted_at,reviewed_at,review_comment").eq("report_year", Number(y)),
     S.sb.from("report_requirements").select("id,due_date").eq("year", Number(y)).eq("active", true)
   ]);
   for (const r of [d, i, pl, rp, rq]) if (r.error) throw r.error;
@@ -1459,6 +1490,16 @@ function donut(title, parts, page) {
       <text x="21" y="21.5" text-anchor="middle" class="d-n">${fmt(total)}</text><text x="21" y="26.5" text-anchor="middle" class="d-l">нийт</text></svg>
     <ul class="dleg">${parts.map(([l, v]) => `<li><i style="background:${DONUT_C[l] || "#94a3b8"}"></i>${esc(l)}: ${fmt(v)} - ${total ? (v / total * 100).toFixed(2) : "0.00"}%</li>`).join("")}</ul></div></div>`;
 }
+function myReportsPanel() {
+  const ord = { "Буцаасан": 0, "Илгээсэн": 1, "Баталгаажсан": 2 };
+  const list = DB.reps.slice().sort((a, b) => ord[a.status] - ord[b.status] || String(b.reviewed_at || b.submitted_at).localeCompare(String(a.reviewed_at || a.submitted_at)));
+  const c = s => DB.reps.filter(r => r.status === s).length, ret = c("Буцаасан");
+  return `<div class="card myrep"><div class="card-h map-h"><span>Миний илгээсэн тайлангийн төлөв</span><a class="link-btn" data-go="repList">Бүгдийг харах →</a></div>
+    <div class="myrep-sum"><span class="ms ms-ok">✅ Баталгаажсан <b>${c("Баталгаажсан")}</b></span><span class="ms ms-wait">⏳ Хянагдаж байна <b>${c("Илгээсэн")}</b></span><span class="ms ms-ret">↩️ Буцаасан <b>${ret}</b></span></div>
+    ${ret ? `<div class="note-red">Ерөнхий газраас <b>${ret}</b> тайлан буцаагдсан байна. Шалтгааныг нь уншаад засаж дахин илгээнэ үү.</div>` : ""}
+    ${list.length ? `<div class="myrep-list">${list.slice(0, 6).map(r => `<div class="myrep-i"><div class="myrep-t"><b>${esc(r.period)} · ${esc(r.report_type)}</b>${r.title ? `<br><span class="muted">${esc(r.title)}</span>` : ""}</div>${repStatusCell(r)}
+      ${r.status === "Буцаасан" ? `<button class="sm" data-go="repList">Засах</button>` : ""}</div>`).join("")}</div>` : '<p class="muted">Энэ онд тайлан илгээгээгүй байна. <a class="link-btn" data-go="repForm">Тайлан илгээх →</a></p>'}</div>`;
+}
 function renderKpis() {
   const d = DB.dis, I = DB.ins, v = DB.vio;
   const cnt = (list, st) => list.filter(x => x.status === st).length;
@@ -1478,7 +1519,7 @@ function renderKpis() {
   // Тухайн онд нэг ч тайлан ирүүлээгүй байгууллагын тоо
   const orgsAll = seeAll() ? S.orgs.filter(o => o.active !== false) : [{ id: S.profile.org_id }];
   const sentOrgs = orgsAll.filter(o => DB.reps.some(r => r.org_id === o.id)).length, missOrgs = orgsAll.length - sentOrgs;
-  $("db_kpis").innerHTML = `<div class="sgrid">
+  $("db_kpis").innerHTML = (isOrg() ? myReportsPanel() : "") + `<div class="sgrid">
     ${sumCard("#ff6b6b", "Гамшиг, ослын бүртгэл", `Нийт бүртгэл ${fmt(d.length)}`, "disList", [["ok", "Баталгаажсан", fmt(dOk)], ["wait", "Хянагдаж байгаа", fmt(dWait)], ["bad", "Буцаагдсан", fmt(dRet)], ["people", "Нас барсан / гэмтсэн", `${fmt(sum("deaths"))} / ${fmt(sum("injured"))}`]])}
     ${sumCard("#2ec4b6", "Тайлан ирүүлэлт", `Нийт тайлан ${fmt(DB.reps.length)}${seeAll() ? ` · ирүүлсэн байгууллага ${fmt(sentOrgs)} / ${fmt(orgsAll.length)}` : ""}`, "repList", [["ok", "Баталгаажсан", fmt(rOk)], ["wait", "Хянагдаж байгаа", fmt(rWait)], ["bad", "Буцаагдсан", fmt(rRet)], ["draft", seeAll() ? "Ирүүлээгүй байгууллага" : "Ирүүлээгүй тайлан", seeAll() ? `${fmt(missOrgs)} / ${fmt(orgsAll.length)}` : fmt(rMiss), "repPerf"]])}
     ${sumCard("#4c7bd9", "Улсын хяналт шалгалт", `Нийт шалгалт ${fmt(I.length)}${plan ? ` · төлөвлөгөө ${Math.round(I.length / plan * 100)}%` : ""}`, "inspList", [["ok", "Баталгаажсан", fmt(iOk)], ["wait", "Хянагдаж байгаа", fmt(iWait)], ["bad", "Буцаагдсан", fmt(iRet)], ["alert", "Зөрчилтэй", fmt(iBad)]])}
