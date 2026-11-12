@@ -116,6 +116,48 @@ td.cell{font-size:12.5px;font-weight:600;text-align:center;vertical-align:middle
 table.compact td,table.compact th{padding:6px 8px}
 @media(max-width:640px){.hot-ico span{width:20px;height:20px;font-size:10px;border-width:2px;transform:translate(3px,3px)}.risk-ico span{width:16px;height:16px;font-size:10px}}
 
+/* ---- Dashboard: товч карт ---- */
+.kpis{display:block}
+.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:16px}
+.scard{background:#fff;border-radius:12px;border:1px solid #e3e7ee;overflow:hidden;padding-bottom:22px;
+  background-image:linear-gradient(var(--sc),var(--sc));background-size:100% 150px;background-repeat:no-repeat}
+.scard-h{text-align:center;color:#fff;padding:16px 12px 14px}
+.scard-t{font-size:22px;font-weight:700;letter-spacing:.2px}
+.scard-s{font-size:15px;font-weight:600;opacity:.95;margin-top:2px}
+.stiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 16px}
+.stile{background:#fff;border:1px solid #e1e5eb;text-align:center;padding:18px 8px 16px;cursor:pointer;transition:box-shadow .15s}
+.stile:hover{box-shadow:0 6px 18px #0000001a}
+.sico{width:46px;height:46px;fill:none;stroke:var(--c);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.sico circle:first-child{fill:color-mix(in srgb,var(--c) 12%,#fff)}
+.sico g{stroke-width:1.9}
+.stile-l{font-weight:600;color:#273449;margin-top:8px;font-size:15px}
+.stile-v{font-size:26px;color:#273449;margin-top:4px;font-weight:500}
+.loss-strip{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;background:#fff;border:1px solid #e3e7ee;border-radius:12px;padding:10px 16px;margin-bottom:16px;cursor:pointer;color:#475569;font-size:14px}
+.loss-strip .sico{width:30px;height:30px}
+.loss-strip b{color:#14284b;font-size:16px}
+.dgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:16px}
+.dcard{background:#fff;border:1px solid #e3e7ee;border-radius:12px;padding:16px 18px 20px}
+.dcard-h{display:flex;align-items:center;gap:8px}
+.dcard-t{flex:1;text-align:center;font-size:22px;color:#273449}
+.dmenu{background:#fff;color:#273449;border:1px solid #cfd5dd;border-radius:6px;padding:4px 10px;font-size:18px;line-height:1}
+.dbody{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:14px}
+@media(min-width:1700px){.sgrid,.dgrid{grid-template-columns:repeat(4,1fr)}}
+.donut{width:160px;height:160px;flex:none}
+.donut circle{transition:stroke-width .15s}.donut circle:hover{stroke-width:7}
+.d-n{font-size:6px;font-weight:700;fill:#273449}.d-l{font-size:2.6px;fill:#64748b}
+.dleg{list-style:none;margin:0;padding:0;font-size:13px;color:#475569}
+.dleg li{display:flex;align-items:center;gap:7px;margin:7px 0}
+.dleg i{width:13px;height:13px;flex:none}
+@media(max-width:640px){
+  .sgrid,.dgrid{grid-template-columns:1fr}
+  .scard{background-size:100% 135px}
+  .scard-t{font-size:20px}
+  .stile-v{font-size:24px}
+  .dcard-t{font-size:19px}
+  .donut{width:130px;height:130px}
+  .dbody{gap:12px}.dleg{font-size:12px}
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -147,7 +189,7 @@ table.compact td,table.compact th{padding:6px 8px}
     <a class="nav-item" data-go="stats">06 · Статистик</a>
     <a class="nav-item" data-go="users">07 · Байгууллага, хэрэглэгч</a>
   </nav>
-  <div class="ver">Хувилбар 1.3 © ОБЕГ</div>
+  <div class="ver">Хувилбар 1.4 © ОБЕГ</div>
 </aside>
 <div class="overlay" id="navOverlay"></div>
 <div class="main">
@@ -1379,28 +1421,62 @@ async function loadDashboard() {
   message("db_msg", "");
   renderKpis(); renderTypes(); renderMap(); renderRank(); renderLatest(); renderRiskCards();
 }
-function renderKpis() {
-  const d = DB.dis, v = DB.vio, ym = today().slice(0, 7);
-  const sum = k => d.reduce((a, x) => a + num(x[k]), 0);
-  const thisMonth = d.filter(x => String(x.started_at).slice(0, 7) === ym).length;
-  const fixed = v.filter(x => x.status === "Арилгасан").length, late = v.filter(isOverdue).length;
-  const k = [
-    ["warn", "Нийт гамшиг, осол", fmt(d.length), `энэ сард ${thisMonth}`, "disList"],
-    ["red", "Амь нас, эрүүл мэнд", `${fmt(sum("deaths"))} / ${fmt(sum("injured"))}`, "нас барсан / гэмтсэн", "disList"],
-    ["amber", "Материаллаг хохирол", moneyShort(sum("economic_loss")), `мал ${fmt(sum("livestock_loss"))}, барилга ${fmt(sum("buildings_damaged"))}`, "stats"],
-    ["blue", "Хяналт шалгалт", fmt(DB.ins.length), `зөрчилтэй ${DB.ins.filter(x => x.result === "Зөрчилтэй").length}`, "inspList"],
-    ["purple", "Илэрсэн зөрчил", fmt(v.length), `торгууль ${moneyShort(v.reduce((a, x) => a + num(x.fine_amount), 0))}`, "viol"],
-    ["green", "Арилгасан зөрчил", fmt(fixed), v.length ? `${Math.round(fixed / v.length * 100)}% биелэлт` : "—", "viol"],
-    ...reportKpi(),
-    ["crit", "Хугацаа хэтэрсэн шаардлага", fmt(late), late ? "яаралтай хянах" : "хэтэрсэн шаардлага алга", "viol"]
-  ];
-  $("db_kpis").innerHTML = k.map(([c, t, val, sub, pg]) => `<div class="kpi k-${c}" data-go="${pg}"><div class="kpi-t">${t}</div><div class="kpi-v">${val}</div><div class="kpi-s">${sub}</div></div>`).join("");
+/* ---------- Товч мэдээллийн карт + цагираган график ---------- */
+const ICO = {
+  ok: ["#2ec4b6", '<path d="M8 12.5l2.8 2.8L16.5 9.5"/>'],
+  wait: ["#6c5ce7", '<path d="M12 7v5l3 2.5"/>'],
+  bad: ["#e74c3c", '<path d="M9 9l6 6M15 9l-6 6"/>'],
+  draft: ["#f39c12", '<path d="M8.5 10.5h7M8.5 13.5h7"/>'],
+  alert: ["#e8590c", '<path d="M12 7.5v5.5M12 16.2v.3"/>'],
+  people: ["#3b5bdb", '<circle cx="10" cy="10" r="2.2"/><path d="M6.5 16c.6-2 2-3 3.5-3s2.9 1 3.5 3M14.5 8.3a2 2 0 010 3.6M15.5 13.3c1 .4 1.8 1.3 2.1 2.7"/>'],
+  money: ["#2b8a3e", '<path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.5 0-2.5.8-2.5 1.9 0 2.6 5 1.3 5 4 0 1.1-1 1.9-2.5 1.9-1.1 0-2.1-.5-2.6-1.3M12 6.5v1.5M12 16v1.5"/>']
+};
+const icon = k => { const [c, d] = ICO[k]; return `<svg class="sico" viewBox="0 0 24 24" style="--c:${c}"><circle cx="12" cy="12" r="10.2"/><g>${d}</g></svg>`; };
+const DONUT_C = { "Баталгаажсан": "#66c23a", "Арилгасан": "#66c23a", "Хянагдаж байгаа": "#f0cf2f", "Хэрэгжиж байна": "#f0cf2f", "Буцаагдсан": "#d6334f", "Биелээгүй": "#d6334f",
+  "Хаагдсан": "#3b82c4", "Хугацаа хэтэрсэн": "#e8892b", "Ирүүлээгүй": "#e8892b" };
+function sumCard(color, title, sub, page, tiles) {
+  return `<div class="scard" style="--sc:${color}"><div class="scard-h"><div class="scard-t">${esc(title)}</div><div class="scard-s">${sub}</div></div>
+    <div class="stiles">${tiles.map(([ic, label, val, pg]) => `<div class="stile" data-go="${pg || page}">${icon(ic)}<div class="stile-l">${esc(label)}</div><div class="stile-v">${val}</div></div>`).join("")}</div></div>`;
 }
-function reportKpi() {
-  const nOrg = seeAll() ? S.orgs.length : 1, due = DB.reqs.filter(q => !q.due_date || q.due_date <= today()).length;
-  const ok = DB.reps.filter(r => r.status === "Баталгаажсан").length, wait = DB.reps.filter(r => r.status === "Илгээсэн").length;
-  const exp = due * nOrg;
-  return [["teal", "Тайлан ирүүлэлт", exp ? `${Math.round(Math.min(DB.reps.length, exp) / exp * 100)}%` : "—", `баталгаажсан ${ok}, хянагдаж буй ${wait}`, "repPerf"]];
+function donut(title, parts, page) {
+  const total = parts.reduce((a, p) => a + p[1], 0), R = 15.9155, C = 100;
+  let off = 25, segs = "";
+  if (total) parts.forEach(([l, v]) => { if (!v) return; const pct = v / total * C;
+    segs += `<circle r="${R}" cx="21" cy="21" fill="none" stroke="${DONUT_C[l] || "#94a3b8"}" stroke-width="6" stroke-dasharray="${pct} ${C - pct}" stroke-dashoffset="${off}"><title>${esc(l)}: ${v}</title></circle>`; off -= pct; });
+  return `<div class="dcard"><div class="dcard-h"><div class="dcard-t">${esc(title)}</div><button class="dmenu" data-go="${page}" title="Жагсаалт руу">☰</button></div>
+    <div class="dbody"><svg viewBox="0 0 42 42" class="donut"><circle r="${R}" cx="21" cy="21" fill="none" stroke="#edf0f4" stroke-width="6"/>${segs}
+      <text x="21" y="21.5" text-anchor="middle" class="d-n">${fmt(total)}</text><text x="21" y="26.5" text-anchor="middle" class="d-l">нийт</text></svg>
+    <ul class="dleg">${parts.map(([l, v]) => `<li><i style="background:${DONUT_C[l] || "#94a3b8"}"></i>${esc(l)}: ${fmt(v)} - ${total ? (v / total * 100).toFixed(2) : "0.00"}%</li>`).join("")}</ul></div></div>`;
+}
+function renderKpis() {
+  const d = DB.dis, I = DB.ins, v = DB.vio;
+  const cnt = (list, st) => list.filter(x => x.status === st).length;
+  const sum = k => d.reduce((a, x) => a + num(x[k]), 0);
+  // Гамшиг, осол
+  const dOk = cnt(d, "Баталгаажсан"), dWait = cnt(d, "Бүртгэгдсэн"), dRet = cnt(d, "Буцаасан"), dClosed = cnt(d, "Хаагдсан");
+  // Хяналт шалгалт
+  const iOk = cnt(I, "Баталгаажсан"), iWait = cnt(I, "Бүртгэгдсэн"), iRet = cnt(I, "Буцаасан"), iBad = I.filter(x => x.result === "Зөрчилтэй").length;
+  const plan = seeAll() ? DB.plans.reduce((a, p) => a + num(p.planned), 0) : num(DB.plans.find(p => p.org_id === S.profile.org_id)?.planned);
+  // Зөрчил (давхцалгүй ангилал)
+  const vs = st => v.filter(x => violStatus(x) === st).length;
+  const vFix = vs("Арилгасан"), vProg = vs("Хэрэгжиж байна"), vNot = vs("Биелээгүй"), vLate = vs("Хугацаа хэтэрсэн");
+  // Тайлан
+  const nOrg = seeAll() ? S.orgs.length : 1, dueIds = new Set(DB.reqs.filter(q => !q.due_date || q.due_date <= today()).map(q => q.id));
+  const rOk = cnt(DB.reps, "Баталгаажсан"), rWait = cnt(DB.reps, "Илгээсэн"), rRet = cnt(DB.reps, "Буцаасан");
+  const rMiss = Math.max(0, dueIds.size * nOrg - DB.reps.filter(r => dueIds.has(r.requirement_id)).length);
+  $("db_kpis").innerHTML = `<div class="sgrid">
+    ${sumCard("#ff6b6b", "Гамшиг, ослын бүртгэл", `Нийт бүртгэл ${fmt(d.length)}`, "disList", [["ok", "Баталгаажсан", fmt(dOk)], ["wait", "Хянагдаж байгаа", fmt(dWait)], ["bad", "Буцаагдсан", fmt(dRet)], ["people", "Нас барсан / гэмтсэн", `${fmt(sum("deaths"))} / ${fmt(sum("injured"))}`]])}
+    ${sumCard("#2ec4b6", "Тайлан ирүүлэлт", `Нийт тайлан ${fmt(DB.reps.length)}`, "repList", [["ok", "Баталгаажсан", fmt(rOk)], ["wait", "Хянагдаж байгаа", fmt(rWait)], ["bad", "Буцаагдсан", fmt(rRet)], ["draft", "Ирүүлээгүй", fmt(rMiss), "repPerf"]])}
+    ${sumCard("#4c7bd9", "Улсын хяналт шалгалт", `Нийт шалгалт ${fmt(I.length)}${plan ? ` · төлөвлөгөө ${Math.round(I.length / plan * 100)}%` : ""}`, "inspList", [["ok", "Баталгаажсан", fmt(iOk)], ["wait", "Хянагдаж байгаа", fmt(iWait)], ["bad", "Буцаагдсан", fmt(iRet)], ["alert", "Зөрчилтэй", fmt(iBad)]])}
+    ${sumCard("#8e6bd8", "Зөрчил, шаардлагын биелэлт", `Нийт зөрчил ${fmt(v.length)} · торгууль ${moneyShort(v.reduce((a, x) => a + num(x.fine_amount), 0))}`, "viol", [["ok", "Арилгасан", fmt(vFix)], ["wait", "Хэрэгжиж байна", fmt(vProg)], ["bad", "Биелээгүй", fmt(vNot)], ["alert", "Хугацаа хэтэрсэн", fmt(vLate)]])}
+    </div>
+    <div class="loss-strip" data-go="stats">${icon("money")}<span>Материаллаг хохирол <b>${moneyShort(sum("economic_loss"))}</b></span><span>Хорогдсон мал <b>${fmt(sum("livestock_loss"))}</b></span><span>Гэмтсэн барилга <b>${fmt(sum("buildings_damaged"))}</b></span><span>Нүүлгэсэн <b>${fmt(sum("evacuated"))}</b> хүн</span></div>
+    <div class="dgrid">
+    ${donut("Гамшиг, ослын хяналт", [["Баталгаажсан", dOk], ["Хянагдаж байгаа", dWait], ["Буцаагдсан", dRet], ["Хаагдсан", dClosed]], "disList")}
+    ${donut("Тайлангийн хяналт", [["Баталгаажсан", rOk], ["Хянагдаж байгаа", rWait], ["Буцаагдсан", rRet], ["Ирүүлээгүй", rMiss]], "repPerf")}
+    ${donut("Хяналт шалгалтын баталгаажилт", [["Баталгаажсан", iOk], ["Хянагдаж байгаа", iWait], ["Буцаагдсан", iRet]], "inspList")}
+    ${donut("Зөрчил арилгалт", [["Арилгасан", vFix], ["Хэрэгжиж байна", vProg], ["Биелээгүй", vNot], ["Хугацаа хэтэрсэн", vLate]], "viol")}
+    </div>`;
 }
 function hbars(items, colorFn) {
   const max = Math.max(1, ...items.map(x => x[1]));
