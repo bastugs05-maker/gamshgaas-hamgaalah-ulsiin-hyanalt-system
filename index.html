@@ -98,6 +98,24 @@ td.cell{font-size:12.5px;font-weight:600;text-align:center;vertical-align:middle
 .legend .lg-t{font-weight:600;color:#334155}
 @media(max-width:640px){.map-lbl .nm{display:none}.map-lbl b{font-size:10.5px}.map-card #db_map{height:260px}}
 
+.map-sels{display:flex;gap:6px;flex-wrap:wrap}
+.lg-tg{display:flex;gap:12px;flex-wrap:wrap;margin-left:auto}
+.legend .lg-tg .pts{margin-left:0}
+.risk-ico span{display:flex;align-items:center;justify-content:center;width:20px;height:20px;background:var(--c);color:#fff;font-weight:800;font-size:13px;
+  border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 1px 4px rgba(0,0,0,.45)}
+.risk-ico b{transform:rotate(45deg);line-height:1}
+.hot-ico span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#fff;color:#111;font-weight:800;font-size:12px;
+  border:3px solid var(--c);box-shadow:0 0 0 3px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.35)}
+.risk-mini{display:inline-flex;width:14px;height:14px;align-items:center;justify-content:center;background:#b42318;color:#fff;font-style:normal;font-weight:800;font-size:10px;border-radius:50% 50% 50% 0}
+.hot-mini{display:inline-flex;min-width:22px;height:22px;align-items:center;justify-content:center;border-radius:50%;border:3px solid var(--c,#555);font-style:normal;font-weight:800;font-size:11px;background:#fff;flex:none}
+.legend .hot-mini{min-width:16px;height:16px;border-width:2px;font-size:9px}
+.lvl{display:inline-block;padding:2px 8px;border-radius:10px;background:var(--c);color:#fff;font-size:12px;font-weight:600}
+.pick-map{height:260px;border:1px solid #d5dbe4;border-radius:8px;margin:4px 0 6px}
+#db_hot .li{align-items:center}
+#db_hot .li>div{flex:1}
+table.compact td,table.compact th{padding:6px 8px}
+@media(max-width:640px){.hot-ico span{width:20px;height:20px;font-size:10px;border-width:2px;transform:translate(3px,3px)}.risk-ico span{width:16px;height:16px;font-size:10px}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -120,7 +138,7 @@ td.cell{font-size:12.5px;font-weight:600;text-align:center;vertical-align:middle
   <nav id="sideNav">
     <a class="nav-item" data-go="dash">01 · Нэгдсэн Dashboard</a>
     <div class="nav-group open"><button class="nav-head">02 · Гамшиг, осол <span class="chev">▶</span></button><div class="nav-sub">
-      <a data-go="disForm">Бүртгэх</a><a data-go="disList">Бүртгэлийн жагсаалт</a></div></div>
+      <a data-go="disForm">Бүртгэх</a><a data-go="disList">Бүртгэлийн жагсаалт</a><a data-go="risk">Эрсдэлтэй цэгүүд</a></div></div>
     <div class="nav-group open"><button class="nav-head">03 · Улсын хяналт шалгалт <span class="chev">▶</span></button><div class="nav-sub">
       <a data-go="inspForm">Шалгалт бүртгэх</a><a data-go="inspList">Шалгалтын жагсаалт</a><a data-go="plans">Шалгалтын төлөвлөгөө</a></div></div>
     <a class="nav-item" data-go="viol">04 · Зөрчил, шаардлага</a>
@@ -129,7 +147,7 @@ td.cell{font-size:12.5px;font-weight:600;text-align:center;vertical-align:middle
     <a class="nav-item" data-go="stats">06 · Статистик</a>
     <a class="nav-item" data-go="users">07 · Байгууллага, хэрэглэгч</a>
   </nav>
-  <div class="ver">Хувилбар 1.0 © ОБЕГ</div>
+  <div class="ver">Хувилбар 1.3 © ОБЕГ</div>
 </aside>
 <div class="overlay" id="navOverlay"></div>
 <div class="main">
@@ -139,6 +157,7 @@ td.cell{font-size:12.5px;font-weight:600;text-align:center;vertical-align:middle
     <section data-page="dash" id="dashBox"></section>
     <section data-page="disForm" class="card" id="disFormBox"></section>
     <section data-page="disList" class="card" id="disListBox"></section>
+    <section data-page="risk" id="riskBox"></section>
     <section data-page="inspForm" class="card" id="inspFormBox"></section>
     <section data-page="inspList" class="card" id="inspListBox"></section>
     <section data-page="viol" class="card" id="violBox"></section>
@@ -174,7 +193,7 @@ const BUCKET = "hyanalt-files";
 
 /* Жагсаалтууд — шаардлагатай бол нэмж, хасаж болно */
 const LISTS = {
-  disasterTypes: ["Үер", "Гал түймэр", "Ой, хээрийн түймэр", "Газар хөдлөлт", "Хүчтэй салхи, шуурга", "Цасан шуурга", "Зуд", "Аянга", "Аюултай бодисын осол", "Тээврийн осол", "Барилга байгууламж нурах", "Халдварт өвчин", "Бусад осол"],
+  disasterTypes: ["Үер", "Усанд осолдох", "Гал түймэр", "Ой, хээрийн түймэр", "Газар хөдлөлт", "Хүчтэй салхи, шуурга", "Цасан шуурга", "Зуд", "Аянга", "Аюултай бодисын осол", "Зам тээврийн осол", "Барилга байгууламж нурах", "Халдварт өвчин", "Бусад осол"],
   responseActions: ["Аврах", "Унтраах", "Нүүлгэн шилжүүлэх", "Эмнэлгийн анхны тусламж", "Хүмүүнлэгийн тусламж", "Хорио цээр", "Сэргээн босгох"],
   inspectionTypes: ["Төлөвлөгөөт", "Төлөвлөгөөт бус", "Гүйцэтгэлийн шалгалт", "Гомдол, мэдээллээр"],
   topics: ["Гал түймрийн аюулгүй байдал", "Гамшгаас хамгаалах төлөвлөгөө", "Аюултай бодис, химийн хор", "Барилга байгууламжийн аюулгүй байдал", "Гамшгаас хамгаалах хүч, хэрэгсэл", "Сургалт, дадлага", "Бусад"],
@@ -183,6 +202,8 @@ const LISTS = {
   penaltyTypes: ["Байхгүй", "Сануулга", "Торгууль", "Үйл ажиллагааг түр зогсоох"],
   reportTypes: ["Хяналт шалгалтын тайлан", "Гамшиг, ослын тайлан", "Үйл ажиллагааны тайлан", "Сургалт, дадлагын тайлан", "Бусад тайлан"],
   reportPeriods: ["I улирал", "II улирал", "III улирал", "IV улирал", "I хагас жил", "II хагас жил", "Жилийн", "1-р сар", "2-р сар", "3-р сар", "4-р сар", "5-р сар", "6-р сар", "7-р сар", "8-р сар", "9-р сар", "10-р сар", "11-р сар", "12-р сар"],
+  riskLevels: ["Өндөр", "Дунд", "Бага"],
+  riskSeasons: ["Бүх улирал", "Хавар", "Зун", "Намар", "Өвөл", "Зун, намар", "Өвөл, хавар"],
   checklist: [
     "Гамшгаас хамгаалах төлөвлөгөө батлагдсан, шинэчлэгдсэн эсэх",
     "Гамшгаас хамгаалах мэргэжлийн анги, бүлэг байгуулагдсан эсэх",
@@ -297,6 +318,7 @@ const PAGES = {
   dash: { title: "Нэгдсэн Dashboard", roles: ["admin", "viewer", "org"], load: () => loadDashboard() },
   disForm: { title: "Гамшиг, осол бүртгэх", roles: ["admin", "org"], load: () => openDisasterForm() },
   disList: { title: "Гамшиг, ослын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadDisasters() },
+  risk: { title: "Эрсдэлтэй цэгүүд", roles: ["admin", "viewer", "org"], load: () => loadRiskPage() },
   inspForm: { title: "Хяналт шалгалт бүртгэх", roles: ["admin", "org"], load: () => openInspectionForm() },
   inspList: { title: "Хяналт шалгалтын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadInspections() },
   viol: { title: "Зөрчил, шаардлагын биелэлт", roles: ["admin", "viewer", "org"], load: () => loadViolations() },
@@ -1062,6 +1084,239 @@ document.addEventListener("click", async e => {
 </script>
 <script>
 "use strict";
+/* =====================================================================
+   ЭРСДЭЛТЭЙ ЦЭГ: гараар бүртгэх + бүртгэгдсэн ослоос давтагдсан цэг илрүүлэх
+   ===================================================================== */
+let RISK = { rows: [], hist: [], editing: null, ok: true };
+const RISK_LEVEL_COLOR = { "Өндөр": "#b42318", "Дунд": "#e8892b", "Бага": "#c9a227" };
+const HOT_RADIUS_KM = 3, HOT_MIN = 2, HOT_YEARS = 5;
+
+/* ---------- Тооцоолол ---------- */
+function kmBetween(a, b) {
+  const R = 6371, r = Math.PI / 180, dLa = (b[0] - a[0]) * r, dLo = (b[1] - a[1]) * r;
+  const h = Math.sin(dLa / 2) ** 2 + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+/* Нэг төрлийн осол HOT_RADIUS_KM дотор HOT_MIN ба түүнээс олон удаа бүртгэгдсэн бол "давтагдсан цэг" */
+function computeHotspots(list, radius = HOT_RADIUS_KM, min = HOT_MIN) {
+  const byType = {};
+  list.filter(x => x.lat && x.lng).forEach(x => (byType[x.disaster_type] = byType[x.disaster_type] || []).push(x));
+  const out = [];
+  Object.entries(byType).forEach(([type, pts]) => {
+    const left = pts.slice();
+    while (left.length) {
+      // хамгийн олон хөрштэй цэгийг төв болгоно
+      let best = 0, bestN = -1;
+      left.forEach((p, i) => { const n = left.filter(q => kmBetween([p.lat, p.lng], [q.lat, q.lng]) <= radius).length; if (n > bestN) { bestN = n; best = i; } });
+      const c = left[best];
+      const members = left.filter(q => kmBetween([c.lat, c.lng], [q.lat, q.lng]) <= radius);
+      members.forEach(m => left.splice(left.indexOf(m), 1));
+      if (members.length < min) continue;
+      const lat = members.reduce((a, m) => a + m.lat, 0) / members.length, lng = members.reduce((a, m) => a + m.lng, 0) / members.length;
+      const cnt = k => { const c = {}; members.forEach(m => m[k] && (c[m[k]] = (c[m[k]] || 0) + 1)); return Object.entries(c).sort((a, b) => b[1] - a[1])[0]?.[0] || ""; };
+      out.push({ type, n: members.length, lat: +lat.toFixed(5), lng: +lng.toFixed(5), aimag: cnt("aimag"), soum: cnt("soum"),
+        deaths: members.reduce((a, m) => a + num(m.deaths), 0), injured: members.reduce((a, m) => a + num(m.injured), 0),
+        last: members.map(m => m.started_at).sort().pop(), first: members.map(m => m.started_at).sort()[0], ids: members.map(m => m.id) });
+    }
+  });
+  return out.sort((a, b) => b.n - a.n || b.deaths - a.deaths);
+}
+/* Аймаг бүрд хамгийн их давтагддаг осол, түүний хамгийн их гардаг сум */
+function aimagTopRisks(list) {
+  const A = {};
+  list.forEach(x => { const a = A[x.aimag] = A[x.aimag] || { n: 0, types: {} }; a.n++;
+    const t = a.types[x.disaster_type] = a.types[x.disaster_type] || { n: 0, deaths: 0, soums: {} };
+    t.n++; t.deaths += num(x.deaths); if (x.soum) t.soums[x.soum] = (t.soums[x.soum] || 0) + 1; });
+  return Object.entries(A).map(([aimag, a]) => {
+    const types = Object.entries(a.types).sort((x, y) => y[1].n - x[1].n || y[1].deaths - x[1].deaths);
+    return { aimag, n: a.n, top: types.slice(0, 3).map(([type, t]) => { const s = Object.entries(t.soums).sort((x, y) => y[1] - x[1])[0];
+      return { type, n: t.n, deaths: t.deaths, soum: s ? s[0] : "", soumN: s ? s[1] : 0 }; }) };
+  }).sort((x, y) => y.n - x.n);
+}
+
+/* ---------- Өгөгдөл ---------- */
+async function fetchRiskData() {
+  const since = `${new Date().getFullYear() - HOT_YEARS + 1}-01-01`;
+  const [r, h] = await Promise.all([
+    S.sb.from("risk_points").select("*").order("created_at", { ascending: false }),
+    S.sb.from("disasters").select("id,disaster_type,aimag,soum,lat,lng,started_at,deaths,injured").gte("started_at", since)
+  ]);
+  RISK.ok = !r.error; RISK.rows = r.error ? [] : (r.data || []).filter(x => x.active !== false);
+  if (h.error) throw h.error;
+  RISK.hist = h.data || [];
+}
+
+/* ---------- Газрын зураг дээр нэмэх давхарга ---------- */
+function riskIcon(level) {
+  return L.divIcon({ className: "risk-ico", html: `<span style="--c:${RISK_LEVEL_COLOR[level] || "#b42318"}"><b>!</b></span>`, iconSize: [22, 22], iconAnchor: [11, 20], popupAnchor: [0, -18] });
+}
+function riskPopup(p) {
+  const near = RISK.hist.filter(x => x.disaster_type === p.risk_type && x.lat && kmBetween([p.lat, p.lng], [x.lat, x.lng]) <= HOT_RADIUS_KM).length;
+  return `<b>⚠ ${esc(p.name)}</b><br>${esc(p.risk_type)} · эрсдэл: <b style="color:${RISK_LEVEL_COLOR[p.level]}">${esc(p.level)}</b>
+    <br>${esc([p.aimag, p.soum, p.bag].filter(Boolean).join(", "))}${p.season ? "<br>Улирал: " + esc(p.season) : ""}
+    ${p.description ? "<br>" + esc(p.description) : ""}${p.measures ? "<br><i>Арга хэмжээ: " + esc(p.measures) + "</i>" : ""}
+    <br><span class="muted">${HOT_RADIUS_KM} км дотор бүртгэгдсэн ижил осол (${HOT_YEARS} жил): <b>${near}</b></span>`;
+}
+function hotPopup(h) {
+  return `<b>🔁 Давтагдсан цэг — ${esc(h.type)}</b><br>${esc([h.aimag, h.soum].filter(Boolean).join(", "))}
+    <br>${HOT_RADIUS_KM} км дотор <b>${h.n} удаа</b> бүртгэгдсэн${h.deaths ? `, нас барсан ${h.deaths}` : ""}${h.injured ? `, гэмтсэн ${h.injured}` : ""}
+    <br><span class="muted">${esc(String(h.first).slice(0, 10))} — ${esc(String(h.last).slice(0, 10))}</span>`;
+}
+function addRiskLayers(group, typeFilter, opts) {
+  const tf = x => !typeFilter || x === typeFilter;
+  if (opts.hot) computeHotspots(RISK.hist.filter(x => tf(x.disaster_type))).forEach(h =>
+    L.marker([h.lat, h.lng], { icon: L.divIcon({ className: "hot-ico", html: `<span style="--c:${typeColor(h.type)}">${h.n}</span>`, iconSize: [28, 28], iconAnchor: [14, 14] }) })
+      .bindPopup(hotPopup(h)).addTo(group));
+  if (opts.risk) RISK.rows.filter(p => tf(p.risk_type)).forEach(p => L.marker([p.lat, p.lng], { icon: riskIcon(p.level) }).bindPopup(riskPopup(p)).addTo(group));
+}
+
+/* ---------- Эрсдэлтэй цэгийн хуудас ---------- */
+async function loadRiskPage() {
+  const box = $("riskBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="card">
+      <div class="card-h map-h"><span>Эрсдэлтэй цэгүүд</span>${isAdmin() || isOrg() ? '<button id="rk_new">+ Шинэ цэг бүртгэх</button>' : ""}</div>
+      <p class="muted">Усанд осолддог газар, ослын аюултай замын хэсэг, үерт автдаг хороолол гэх мэт байнга анхаарах шаардлагатай газрыг бүртгэнэ. Нэгдсэн Dashboard-ын газрын зураг дээр "!" тэмдгээр харагдана.</p>
+      <div class="filters">
+        ${seeAll() ? `<div><label>Аймаг</label><select id="rk_aimag">${options(AIMAGS, "", "Бүгд")}</select></div>` : ""}
+        <div><label>Төрөл</label><select id="rk_type">${options(LISTS.disasterTypes, "", "Бүгд")}</select></div>
+        <div><label>Эрсдэлийн түвшин</label><select id="rk_level">${options(LISTS.riskLevels, "", "Бүгд")}</select></div>
+        <div class="f-btns"><button class="green" id="rk_xlsx">Excel</button></div></div>
+      <div id="rk_info" class="message"></div><div class="table-wrap" id="rk_table"></div></div>
+      <div class="card"><div class="card-h">Бүртгэгдсэн ослоос илэрсэн давтагдсан цэгүүд</div>
+        <p class="muted">Сүүлийн ${HOT_YEARS} жилд нэг төрлийн осол ${HOT_RADIUS_KM} км дотор ${HOT_MIN} ба түүнээс олон удаа бүртгэгдсэн газрууд. Зөвхөн GPS солбицолтой бүртгэл тооцогдоно.</p>
+        <div class="table-wrap" id="rk_hot"></div></div>
+      <div class="card"><div class="card-h">Аймаг бүрд хамгийн их давтагддаг осол (сүүлийн ${HOT_YEARS} жил)</div><div class="table-wrap" id="rk_top"></div></div>`;
+    box.dataset.ready = 1;
+    ["rk_aimag", "rk_type", "rk_level"].forEach(id => $(id) && ($(id).onchange = renderRiskPage));
+    if ($("rk_new")) $("rk_new").onclick = () => openRiskForm();
+    $("rk_xlsx").onclick = () => exportExcel("erseltei_tseg.xlsx", [
+      { name: "Эрсдэлтэй цэг", rows: [["Нэр", "Төрөл", "Түвшин", "Аймаг", "Сум", "Баг", "Өргөрөг", "Уртраг", "Улирал", "Тайлбар", "Арга хэмжээ", "Байгууллага"],
+        ...filteredRisk().map(p => [p.name, p.risk_type, p.level, p.aimag, p.soum || "", p.bag || "", p.lat, p.lng, p.season || "", p.description || "", p.measures || "", orgName(p.org_id)])] },
+      { name: "Давтагдсан цэг", rows: [["Төрөл", "Аймаг", "Сум", "Тоо", "Нас барсан", "Гэмтсэн", "Өргөрөг", "Уртраг", "Эхний", "Сүүлийн"],
+        ...RISK.hot.map(h => [h.type, h.aimag, h.soum, h.n, h.deaths, h.injured, h.lat, h.lng, String(h.first).slice(0, 10), String(h.last).slice(0, 10)])] }]);
+  }
+  message("rk_info", "Ачаалж байна...");
+  try { await fetchRiskData(); } catch (e) { return message("rk_info", "Алдаа: " + safeError(e), "error"); }
+  renderRiskPage();
+}
+function filteredRisk() {
+  const ai = $("rk_aimag")?.value || "", ty = $("rk_type").value, lv = $("rk_level").value;
+  return RISK.rows.filter(p => (!ai || p.aimag === ai) && (!ty || p.risk_type === ty) && (!lv || p.level === lv));
+}
+function canEditRisk(p) { return isAdmin() || (isOrg() && p.org_id === S.profile.org_id); }
+function renderRiskPage() {
+  if (!RISK.ok) message("rk_info", "Эрсдэлтэй цэгийн хүснэгт үүсээгүй байна. Supabase-д 4_risk.sql-ийг ажиллуулна уу.", "error");
+  const list = filteredRisk(), ai = $("rk_aimag")?.value || "", ty = $("rk_type").value;
+  if (RISK.ok) message("rk_info", `Нийт ${list.length} эрсдэлтэй цэг.`, "success");
+  $("rk_table").innerHTML = `<table><tr><th>Нэр</th><th>Төрөл</th><th>Түвшин</th><th>Байршил</th><th>Улирал</th><th>Байгууллага</th><th>Үйлдэл</th></tr>
+    ${list.map(p => `<tr><td><b>${esc(p.name)}</b>${p.description ? "<br><span class='muted'>" + esc(p.description) + "</span>" : ""}</td><td>${esc(p.risk_type)}</td>
+      <td><span class="lvl" style="--c:${RISK_LEVEL_COLOR[p.level]}">${esc(p.level)}</span></td><td>${esc([p.aimag, p.soum].filter(Boolean).join(" / "))}<br><span class="muted">${p.lat}, ${p.lng}</span></td>
+      <td>${esc(p.season || "—")}</td><td>${esc(orgName(p.org_id))}</td>
+      <td class="acts">${canEditRisk(p) ? `<button class="sm secondary" data-rk-edit="${p.id}">Засах</button><button class="sm danger" data-rk-del="${p.id}">Устгах</button>` : ""}</td></tr>`).join("")
+      || '<tr><td colspan="7" class="muted">Эрсдэлтэй цэг бүртгэгдээгүй байна.</td></tr>'}</table>`;
+  const hist = RISK.hist.filter(x => (!ai || x.aimag === ai) && (!ty || x.disaster_type === ty));
+  RISK.hot = computeHotspots(hist);
+  const canAdd = isAdmin() || isOrg();
+  $("rk_hot").innerHTML = `<table><tr><th>Төрөл</th><th>Байршил</th><th>Тоо</th><th>Хохирол</th><th>Хугацаа</th>${canAdd ? "<th></th>" : ""}</tr>
+    ${RISK.hot.map((h, i) => `<tr><td><i class="dot" style="background:${typeColor(h.type)}"></i> <b>${esc(h.type)}</b></td><td>${esc([h.aimag, h.soum].filter(Boolean).join(" / "))}<br><span class="muted">${h.lat}, ${h.lng}</span></td>
+      <td><b>${h.n}</b> удаа</td><td>${h.deaths ? "нас барсан " + h.deaths : ""}${h.deaths && h.injured ? ", " : ""}${h.injured ? "гэмтсэн " + h.injured : ""}${!h.deaths && !h.injured ? "—" : ""}</td>
+      <td>${esc(String(h.first).slice(0, 10))} — ${esc(String(h.last).slice(0, 10))}</td>
+      ${canAdd ? `<td><button class="sm" data-rk-fromhot="${i}">Эрсдэлтэй цэгээр бүртгэх</button></td>` : ""}</tr>`).join("")
+      || `<tr><td colspan="6" class="muted">Давтагдсан цэг илрээгүй.</td></tr>`}</table>`;
+  const top = aimagTopRisks(hist);
+  $("rk_top").innerHTML = `<table><tr><th>Аймаг, нийслэл</th><th>Нийт</th><th>1-р эрсдэл</th><th>2-р эрсдэл</th><th>3-р эрсдэл</th></tr>
+    ${top.map(a => `<tr><td><b>${esc(a.aimag)}</b></td><td>${a.n}</td>${[0, 1, 2].map(i => { const t = a.top[i]; return `<td>${t ? `<i class="dot" style="background:${typeColor(t.type)}"></i> <b>${esc(t.type)}</b> — ${t.n}${t.soum ? `<br><span class="muted">хамгийн их: ${esc(t.soum)} (${t.soumN})</span>` : ""}` : "—"}</td>`; }).join("")}</tr>`).join("")
+      || '<tr><td colspan="5" class="muted">Бүртгэл алга.</td></tr>'}</table>`;
+}
+
+/* ---------- Бүртгэх / засах маягт ---------- */
+function openRiskForm(p) {
+  RISK.editing = p && p.id ? p : null;
+  const d = p || { aimag: S.orgById[S.profile.org_id]?.aimag || "", level: "Дунд" };
+  openModal(RISK.editing ? "Эрсдэлтэй цэг засах" : "Эрсдэлтэй цэг бүртгэх", `
+    ${isAdmin() ? `<label>Байгууллага *</label><select id="r_org">${orgOptions(d.org_id, "— сонгох —")}</select>` : ""}
+    <label>Цэгийн нэр *</label><input id="r_name" value="${esc(d.name)}" placeholder="Жишээ: Туул голын Сонгинын гүүрний орчим">
+    <div class="grid g3">
+      <div><label>Эрсдэлийн төрөл *</label><select id="r_type">${options(LISTS.disasterTypes, d.risk_type, "— сонгох —")}</select></div>
+      <div><label>Эрсдэлийн түвшин *</label><select id="r_level">${options(LISTS.riskLevels, d.level)}</select></div>
+      <div><label>Эрсдэл өндөр улирал</label><select id="r_season">${options(LISTS.riskSeasons, d.season, "—")}</select></div>
+    </div>
+    <div class="grid g3">
+      <div><label>Аймаг, нийслэл *</label><select id="r_aimag">${options(AIMAGS, d.aimag, "— сонгох —")}</select></div>
+      <div><label>Сум, дүүрэг</label><input id="r_soum" value="${esc(d.soum)}"></div>
+      <div><label>Баг, хороо</label><input id="r_bag" value="${esc(d.bag)}"></div>
+    </div>
+    <label>Байршил * <span class="muted">— газрын зураг дээр дарж эсвэл "Миний байршил"-аар сонгоно</span></label>
+    <div id="r_map" class="pick-map"></div>
+    <div class="grid g3">
+      <div><label>Өргөрөг (lat)</label><input id="r_lat" type="number" step="any" value="${d.lat ?? ""}"></div>
+      <div><label>Уртраг (lng)</label><input id="r_lng" type="number" step="any" value="${d.lng ?? ""}"></div>
+      <div><label>&nbsp;</label><button type="button" class="secondary" id="r_gps">📍 Миний байршил</button></div>
+    </div>
+    <label>Тайлбар (яагаад эрсдэлтэй вэ)</label><textarea id="r_desc">${esc(d.description)}</textarea>
+    <label>Авсан / авах арга хэмжээ</label><textarea id="r_meas" placeholder="Анхааруулах тэмдэг, хашаа, эргүүл, сургалт...">${esc(d.measures)}</textarea>
+    <label>Зураг</label><input id="r_files" type="file" multiple accept="image/*,.pdf">
+    ${RISK.editing?.files?.length ? `<p class="muted">Одоо байгаа: ${fileButtons(RISK.editing.files)}</p>` : ""}
+    <div class="actions"><button id="r_save">${RISK.editing ? "Хадгалах" : "Бүртгэх"}</button><button class="secondary" id="r_cancel">Болих</button></div>
+    <div id="r_msg" class="message"></div>`, true);
+  let mk = null;
+  const pmap = window.L ? L.map("r_map", { scrollWheelZoom: false }) : null;
+  const setPt = (lat, lng, pan) => { $("r_lat").value = (+lat).toFixed(5); $("r_lng").value = (+lng).toFixed(5);
+    if (!pmap) return; if (mk) mk.setLatLng([lat, lng]); else mk = L.marker([lat, lng], { icon: riskIcon($("r_level").value) }).addTo(pmap); if (pan) pmap.setView([lat, lng], Math.max(pmap.getZoom(), 11)); };
+  if (pmap) {
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(pmap);
+    if (d.lat) { pmap.setView([d.lat, d.lng], 12); setPt(d.lat, d.lng); }
+    else if (AIMAG_CENTERS[d.aimag]) pmap.setView(AIMAG_CENTERS[d.aimag], 8); else pmap.fitBounds([[41.5, 87.7], [52.2, 119.9]]);
+    pmap.on("click", e => setPt(e.latlng.lat, e.latlng.lng));
+    setTimeout(() => pmap.invalidateSize(), 80);
+  } else $("r_map").innerHTML = '<p class="muted pad">Газрын зураг ачаалагдсангүй — солбицлоо гараар оруулна уу.</p>';
+  $("r_aimag").onchange = () => { const c = AIMAG_CENTERS[$("r_aimag").value]; if (c && pmap && !$("r_lat").value) pmap.setView(c, 8); };
+  $("r_level").onchange = () => mk && mk.setIcon(riskIcon($("r_level").value));
+  ["r_lat", "r_lng"].forEach(id => $(id).onchange = () => { const a = Number($("r_lat").value), b = Number($("r_lng").value); if (a && b) setPt(a, b, true); });
+  $("r_gps").onclick = () => {
+    if (!navigator.geolocation) return message("r_msg", "Энэ төхөөрөмж байршил тодорхойлохгүй байна.", "error");
+    message("r_msg", "Байршил тодорхойлж байна...");
+    navigator.geolocation.getCurrentPosition(g => { setPt(g.coords.latitude, g.coords.longitude, true); message("r_msg", ""); },
+      () => message("r_msg", "Байршил авах зөвшөөрөл олгогдсонгүй.", "error"), { enableHighAccuracy: true, timeout: 15000 });
+  };
+  $("r_cancel").onclick = closeModal;
+  $("r_save").onclick = saveRisk;
+}
+async function saveRisk() {
+  const v = id => $(id).value.trim();
+  const org_id = isAdmin() ? Number(v("r_org")) : S.profile.org_id;
+  const lat = v("r_lat") ? Number(v("r_lat")) : null, lng = v("r_lng") ? Number(v("r_lng")) : null;
+  if (!org_id || !v("r_name") || !v("r_type") || !v("r_aimag")) return message("r_msg", "* тэмдэгтэй талбаруудыг бөглөнө үү.", "error");
+  if (lat === null || lng === null) return message("r_msg", "Байршлаа газрын зураг дээр дарж сонгоно уу.", "error");
+  if (lat < 41 || lat > 52.5 || lng < 87 || lng > 120.5) return message("r_msg", "Солбицол Монгол Улсын нутаг дэвсгэрт байх ёстой.", "error");
+  $("r_save").disabled = true; message("r_msg", "Хадгалж байна...");
+  try {
+    const newFiles = await uploadFiles($("r_files").files, "risk");
+    const data = { org_id, name: v("r_name"), risk_type: v("r_type"), level: v("r_level"), season: v("r_season") || null, aimag: v("r_aimag"),
+      soum: v("r_soum") || null, bag: v("r_bag") || null, lat, lng, description: v("r_desc") || null, measures: v("r_meas") || null,
+      files: [...(RISK.editing?.files || []), ...newFiles] };
+    const { error } = RISK.editing ? await S.sb.from("risk_points").update(data).eq("id", RISK.editing.id) : await S.sb.from("risk_points").insert(data);
+    if (error) throw error;
+    closeModal(); if (currentPage === "risk") loadRiskPage(); else if (currentPage === "dash") loadDashboard();
+  } catch (e) { message("r_msg", "Алдаа: " + safeError(e), "error"); $("r_save").disabled = false; }
+}
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-rk-edit],[data-rk-del],[data-rk-fromhot]"); if (!t) return;
+  if (t.dataset.rkEdit) openRiskForm(RISK.rows.find(x => String(x.id) === t.dataset.rkEdit));
+  if (t.dataset.rkFromhot) { const h = RISK.hot[Number(t.dataset.rkFromhot)];
+    openRiskForm({ org_id: (S.orgs.find(o => o.kind === "aimag" && o.aimag === h.aimag) || {}).id, risk_type: h.type, aimag: h.aimag, soum: h.soum, lat: h.lat, lng: h.lng, level: h.n >= 4 || h.deaths ? "Өндөр" : "Дунд",
+      name: `${h.soum || h.aimag} — ${h.type} давтагддаг цэг`, description: `${HOT_RADIUS_KM} км дотор ${h.n} удаа ${h.type} бүртгэгдсэн (${String(h.first).slice(0, 10)} — ${String(h.last).slice(0, 10)}).` }); }
+  if (t.dataset.rkDel) {
+    if (!confirm("Энэ эрсдэлтэй цэгийг устгах уу?")) return;
+    const { error } = await S.sb.from("risk_points").delete().eq("id", t.dataset.rkDel);
+    if (error) return alert("Алдаа: " + safeError(error)); loadRiskPage();
+  }
+});
+
+</script>
+<script>
+"use strict";
 /* Монгол Улсын аймгийн хил. Эх сурвалж: geoBoundaries (www.geoboundaries.org), CC BY 4.0. Хялбарчилсан. */
 const MN_AIMAG_GEO = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Увс"},"geometry":{"type":"Polygon","coordinates":[[[95.505,49.907],[95.082,49.963],[94.999,50.044],[94.618,50.035],[94.39,50.214],[94.24,50.588],[93.703,50.586],[93.397,50.635],[93.01,50.606],[93.009,50.793],[92.588,50.726],[91.856,50.735],[91.458,50.552],[91.409,50.451],[90.903,50.408],[90.022,50.001],[90.239,49.721],[90.503,49.584],[90.667,49.339],[90.907,49.264],[91.021,49.039],[91.23,48.925],[91.338,48.672],[91.668,48.917],[91.943,48.969],[91.985,48.785],[92.233,48.622],[92.754,48.562],[93.169,48.594],[93.429,48.424],[93.668,48.53],[93.758,48.673],[94.097,48.789],[94.727,48.678],[95.134,48.708],[95.526,48.888],[95.575,49.162],[95.726,49.359],[95.482,49.495],[95.412,49.718],[95.505,49.907]]]}},{"type":"Feature","properties":{"name":"Ховд"},"geometry":{"type":"Polygon","coordinates":[[[91.338,48.672],[90.74,48.652],[90.855,48.12],[91.262,47.496],[91.237,47.369],[91.448,47.207],[91.484,46.914],[91.927,46.703],[91.872,46.639],[91.359,46.555],[91.048,46.72],[91.052,46.511],[90.902,46.298],[91.022,46.022],[90.713,45.725],[90.668,45.486],[90.931,45.192],[91.691,45.062],[92.058,45.083],[92.49,45],[92.776,45.05],[93.217,44.997],[93.155,45.238],[93.12,45.766],[93.376,45.888],[93.635,46.427],[93.919,46.695],[94.288,46.879],[94.012,47.304],[93.54,47.557],[93.614,47.652],[93.182,47.966],[93.398,48.118],[93.429,48.424],[93.169,48.594],[92.754,48.562],[92.233,48.622],[91.985,48.785],[91.943,48.969],[91.668,48.917],[91.338,48.672]]]}},{"type":"Feature","properties":{"name":"Завхан"},"geometry":{"type":"Polygon","coordinates":[[[93.429,48.424],[93.398,48.118],[93.182,47.966],[93.614,47.652],[94.171,47.782],[94.506,47.68],[94.973,47.655],[95.073,47.541],[95.529,47.536],[96.11,47.297],[96.268,47.167],[96.343,46.827],[96.731,46.9],[96.938,46.6],[97.169,46.575],[97.392,46.693],[97.568,46.597],[97.694,46.742],[97.874,47.155],[98.251,47.266],[98.417,47.615],[98.178,47.811],[98.238,48.067],[98.576,48.118],[99.074,48.296],[99.071,48.53],[99.215,48.759],[99.114,49.114],[98.837,49.11],[98.553,48.935],[98.424,49.002],[97.86,49.007],[97.49,49.166],[97.176,49.167],[96.878,49.369],[96.875,49.509],[97.131,49.791],[96.995,49.893],[96.417,49.877],[96.261,49.977],[95.843,50.044],[95.505,49.907],[95.412,49.718],[95.482,49.495],[95.726,49.359],[95.575,49.162],[95.526,48.888],[95.134,48.708],[94.727,48.678],[94.097,48.789],[93.758,48.673],[93.668,48.53],[93.429,48.424]]]}},{"type":"Feature","properties":{"name":"Булган"},"geometry":{"type":"Polygon","coordinates":[[[102.643,50.41],[102.418,50.3],[102.104,49.962],[102.558,49.79],[102.54,49.641],[102.281,49.432],[101.978,49.373],[101.677,49.193],[101.666,48.963],[101.96,48.785],[102.131,48.811],[102.238,48.481],[102.48,48.266],[102.632,48.251],[102.842,47.93],[103.207,47.699],[103.678,47.251],[104.148,47.298],[104.069,47.468],[104.528,47.653],[104.76,47.662],[104.704,47.945],[104.393,47.988],[104.288,48.144],[104.534,48.419],[104.528,48.626],[104.544,48.789],[104.378,48.899],[103.975,48.982],[104.103,49.121],[104.52,49.106],[104.734,49.686],[104.535,49.855],[104.523,50.15],[104.363,50.263],[104.146,50.147],[103.608,50.144],[103.177,50.333],[102.942,50.305],[102.643,50.41]]]}},{"type":"Feature","properties":{"name":"Дорноговь"},"geometry":{"type":"Polygon","coordinates":[[[107.687,44.554],[107.655,44.3],[107.8,44.092],[107.955,43.695],[107.934,43.356],[108.031,42.922],[107.98,42.412],[108.241,42.461],[108.847,42.398],[109.024,42.454],[109.528,42.467],[109.903,42.631],[110.433,42.777],[111.048,43.342],[111.573,43.491],[111.959,43.819],[111.693,44.035],[111.409,44.345],[111.605,44.756],[111.77,44.981],[111.953,45.072],[111.925,45.276],[111.685,45.534],[111.707,45.883],[111.576,46.094],[111.167,46.232],[110.868,46.063],[110.565,46.104],[110.39,46.373],[110.122,46.604],[109.915,46.302],[109.623,46.142],[109.345,46.168],[108.959,46.464],[108.672,46.183],[108.559,45.941],[108.467,45.59],[108.653,45.108],[108.49,45.078],[108.418,44.885],[107.842,44.867],[107.687,44.554]]]}},{"type":"Feature","properties":{"name":"Улаанбаатар"},"geometry":{"type":"MultiPolygon","coordinates":[[[[106.356,48.257],[106.522,47.746],[107.111,47.718],[107.511,47.652],[107.572,47.914],[107.352,47.978],[107.099,48.219],[106.918,48.174],[106.356,48.257]]],[[[108.469,47.925],[108.245,47.869],[108.253,47.573],[108.404,47.572],[108.469,47.925]]]]}},{"type":"Feature","properties":{"name":"Говьсүмбэр"},"geometry":{"type":"Polygon","coordinates":[[[108.959,46.464],[109.001,46.781],[108.82,46.98],[108.48,46.78],[107.957,46.774],[108.198,46.644],[108.122,46.482],[108.207,46.336],[108.113,46.193],[108.212,46],[108.559,45.941],[108.672,46.183],[108.959,46.464]]]}},{"type":"Feature","properties":{"name":"Сүхбаатар"},"geometry":{"type":"Polygon","coordinates":[[[111.953,45.072],[112.426,45.074],[112.843,44.839],[113.626,44.742],[114.056,44.926],[114.385,45.143],[114.547,45.383],[115.372,45.388],[115.687,45.453],[115.925,45.627],[116.182,45.692],[116.236,45.882],[116.543,46.237],[116.316,46.547],[115.77,46.589],[114.901,46.502],[114.459,46.807],[114.478,47.131],[113.675,47.513],[112.949,47.614],[112.743,47.575],[112.694,47.794],[112.409,47.764],[112.116,47.645],[112.068,47.316],[111.793,47.38],[111.534,47.235],[111.233,46.611],[111.167,46.232],[111.576,46.094],[111.707,45.883],[111.685,45.534],[111.925,45.276],[111.953,45.072]]]}},{"type":"Feature","properties":{"name":"Говь-Алтай"},"geometry":{"type":"Polygon","coordinates":[[[93.217,44.997],[93.503,44.968],[94.21,44.668],[94.717,44.341],[95,44.25],[95.408,44.294],[95.323,44.027],[95.523,44.003],[95.857,43.41],[95.913,43.232],[96.359,42.899],[96.386,42.724],[97.173,42.795],[97.789,42.709],[97.78,43.33],[97.909,43.599],[97.955,43.982],[97.93,44.355],[98.139,44.491],[98.212,44.934],[98.392,45.2],[98.465,45.583],[98.401,45.803],[98.206,45.99],[97.742,46.283],[97.568,46.597],[97.392,46.693],[97.169,46.575],[96.938,46.6],[96.731,46.9],[96.343,46.827],[96.268,47.167],[96.11,47.297],[95.529,47.536],[95.073,47.541],[94.973,47.655],[94.506,47.68],[94.171,47.782],[93.614,47.652],[93.54,47.557],[94.012,47.304],[94.288,46.879],[93.919,46.695],[93.635,46.427],[93.376,45.888],[93.12,45.766],[93.155,45.238],[93.217,44.997]]]}},{"type":"Feature","properties":{"name":"Орхон"},"geometry":{"type":"Polygon","coordinates":[[[104.378,48.899],[104.52,49.106],[104.103,49.121],[103.975,48.982],[104.378,48.899]]]}},{"type":"Feature","properties":{"name":"Архангай"},"geometry":{"type":"Polygon","coordinates":[[[98.417,47.615],[98.793,47.722],[98.973,47.471],[99.214,47.453],[99.759,47.619],[99.896,47.346],[99.942,47.058],[100.448,47.183],[100.462,46.977],[100.695,46.837],[101.288,46.826],[101.776,46.862],[101.93,46.962],[102.321,47.017],[102.467,46.929],[102.723,47.278],[103.519,47.187],[103.678,47.251],[103.207,47.699],[102.842,47.93],[102.632,48.251],[102.48,48.266],[102.238,48.481],[102.131,48.811],[101.96,48.785],[101.666,48.963],[101.448,48.953],[100.703,49.205],[100.476,48.998],[100.359,48.672],[100.476,48.509],[100.183,48.393],[99.787,48.486],[99.722,48.307],[99.35,48.24],[99.074,48.296],[98.576,48.118],[98.238,48.067],[98.178,47.811],[98.417,47.615]]]}},{"type":"Feature","properties":{"name":"Баянхонгор"},"geometry":{"type":"Polygon","coordinates":[[[97.568,46.597],[97.742,46.283],[98.206,45.99],[98.401,45.803],[98.465,45.583],[98.392,45.2],[98.212,44.934],[98.139,44.491],[97.93,44.355],[97.955,43.982],[97.909,43.599],[97.78,43.33],[97.789,42.709],[98.192,42.652],[99.503,42.566],[99.597,42.579],[99.47,43.36],[99.417,44.034],[99.737,44.15],[100.007,44.042],[100.247,43.844],[101.131,43.834],[101.33,43.858],[101.808,44.049],[101.604,44.572],[101.557,44.866],[101.146,45.088],[101.151,45.461],[101.324,45.766],[101.296,46.039],[101.492,46.19],[101.497,46.58],[101.288,46.826],[100.695,46.837],[100.462,46.977],[100.448,47.183],[99.942,47.058],[99.896,47.346],[99.759,47.619],[99.214,47.453],[98.973,47.471],[98.793,47.722],[98.417,47.615],[98.251,47.266],[97.874,47.155],[97.694,46.742],[97.568,46.597]]]}},{"type":"Feature","properties":{"name":"Дундговь"},"geometry":{"type":"Polygon","coordinates":[[[108.559,45.941],[108.212,46],[108.113,46.193],[108.207,46.336],[108.122,46.482],[108.198,46.644],[107.957,46.774],[107.832,46.606],[107.518,46.455],[107.102,46.404],[106.699,46.572],[106.164,46.575],[105.765,46.732],[105.397,46.439],[104.967,46.59],[104.653,46.38],[104.567,46.155],[104.309,46.125],[104.056,45.746],[103.642,45.662],[103.642,45.471],[103.794,45.345],[103.783,45.169],[104.108,45.202],[104.237,44.877],[104.413,44.764],[104.861,44.678],[105.506,44.677],[105.768,44.309],[106.132,44.182],[106.794,44.431],[107.687,44.554],[107.842,44.867],[108.418,44.885],[108.49,45.078],[108.653,45.108],[108.467,45.59],[108.559,45.941]]]}},{"type":"Feature","properties":{"name":"Өмнөговь"},"geometry":{"type":"Polygon","coordinates":[[[107.687,44.554],[106.794,44.431],[106.132,44.182],[105.768,44.309],[105.506,44.677],[104.861,44.678],[104.413,44.764],[104.237,44.877],[104.108,45.202],[103.783,45.169],[103.546,44.955],[103.245,44.801],[102.932,44.29],[102.998,44.157],[102.371,44.153],[101.808,44.049],[101.33,43.858],[101.131,43.834],[100.247,43.844],[100.007,44.042],[99.737,44.15],[99.417,44.034],[99.47,43.36],[99.597,42.579],[100.318,42.687],[100.845,42.671],[101.796,42.499],[102.075,42.223],[102.442,42.142],[102.707,42.149],[103.386,41.888],[103.844,41.801],[104.525,41.873],[104.518,41.662],[104.916,41.652],[105.011,41.58],[105.697,41.931],[106.786,42.291],[107.566,42.412],[107.98,42.412],[108.031,42.922],[107.934,43.356],[107.955,43.695],[107.8,44.092],[107.655,44.3],[107.687,44.554]]]}},{"type":"Feature","properties":{"name":"Өвөрхангай"},"geometry":{"type":"Polygon","coordinates":[[[103.678,47.251],[103.519,47.187],[102.723,47.278],[102.467,46.929],[102.321,47.017],[101.93,46.962],[101.776,46.862],[101.288,46.826],[101.497,46.58],[101.492,46.19],[101.296,46.039],[101.324,45.766],[101.151,45.461],[101.146,45.088],[101.557,44.866],[101.604,44.572],[101.808,44.049],[102.371,44.153],[102.998,44.157],[102.932,44.29],[103.245,44.801],[103.546,44.955],[103.783,45.169],[103.794,45.345],[103.642,45.471],[103.642,45.662],[104.056,45.746],[104.309,46.125],[104.567,46.155],[104.653,46.38],[104.431,46.51],[104.234,46.853],[104.329,47.041],[104.148,47.298],[103.678,47.251]]]}},{"type":"Feature","properties":{"name":"Төв"},"geometry":{"type":"Polygon","coordinates":[[[104.148,47.298],[104.329,47.041],[104.234,46.853],[104.431,46.51],[104.653,46.38],[104.967,46.59],[105.397,46.439],[105.765,46.732],[106.164,46.575],[106.699,46.572],[107.102,46.404],[107.518,46.455],[107.832,46.606],[107.957,46.774],[108.48,46.78],[108.82,46.98],[108.661,47.086],[108.386,47.503],[108.404,47.572],[108.253,47.573],[108.245,47.869],[108.469,47.925],[108.875,48.071],[109.036,48.347],[108.855,48.817],[108.521,49.124],[108.089,49.009],[107.909,49.074],[107.532,48.976],[107.732,48.795],[107.657,48.653],[107.253,48.558],[107.076,48.615],[106.572,48.531],[105.834,48.865],[105.445,48.757],[105.495,48.644],[105.014,48.505],[104.528,48.626],[104.534,48.419],[104.288,48.144],[104.393,47.988],[104.704,47.945],[104.76,47.662],[104.528,47.653],[104.069,47.468],[104.148,47.298]],[[106.356,48.257],[106.918,48.174],[107.099,48.219],[107.352,47.978],[107.572,47.914],[107.511,47.652],[107.111,47.718],[106.522,47.746],[106.356,48.257]]]}},{"type":"Feature","properties":{"name":"Дорнод"},"geometry":{"type":"Polygon","coordinates":[[[116.543,46.237],[116.831,46.382],[117.368,46.361],[117.414,46.579],[117.697,46.514],[118.301,46.738],[119.68,46.59],[119.929,46.719],[119.708,47.193],[119.143,47.542],[119.122,47.664],[118.755,47.772],[118.555,47.993],[118.17,48.048],[117.805,48.014],[117.375,47.64],[116.871,47.891],[116.439,47.838],[116.253,47.878],[115.935,47.681],[115.571,47.919],[115.548,48.161],[115.813,48.259],[115.787,48.52],[116.711,49.842],[116.233,50.036],[115.745,49.887],[115.224,49.988],[114.831,50.224],[114.178,50.243],[113.218,49.837],[113.044,49.608],[112.807,49.515],[112.487,49.524],[111.996,49.392],[112.149,49.324],[112.293,48.982],[112.237,48.857],[112.512,48.484],[112.559,48.03],[112.694,47.794],[112.743,47.575],[112.949,47.614],[113.675,47.513],[114.478,47.131],[114.459,46.807],[114.901,46.502],[115.77,46.589],[116.316,46.547],[116.543,46.237]]]}},{"type":"Feature","properties":{"name":"Сэлэнгэ"},"geometry":{"type":"Polygon","coordinates":[[[104.52,49.106],[104.378,48.899],[104.544,48.789],[104.528,48.626],[105.014,48.505],[105.495,48.644],[105.445,48.757],[105.834,48.865],[106.572,48.531],[107.076,48.615],[107.253,48.558],[107.657,48.653],[107.732,48.795],[107.532,48.976],[107.909,49.074],[108.089,49.009],[108.521,49.124],[108.571,49.331],[108.304,49.532],[107.968,49.655],[107.944,49.943],[107.383,49.978],[107.099,50.05],[106.816,50.298],[106.261,50.298],[105.844,50.44],[105.298,50.472],[104.363,50.263],[104.523,50.15],[104.535,49.855],[104.734,49.686],[104.52,49.106]],[[105.808,49.131],[105.893,49.426],[105.84,49.685],[106.41,49.53],[106.8,49.471],[106.799,49.132],[106.601,49.087],[106.357,49.186],[106.065,49.097],[105.808,49.131]]]}},{"type":"Feature","properties":{"name":"Хөвсгөл"},"geometry":{"type":"Polygon","coordinates":[[[99.074,48.296],[99.35,48.24],[99.722,48.307],[99.787,48.486],[100.183,48.393],[100.476,48.509],[100.359,48.672],[100.476,48.998],[100.703,49.205],[101.448,48.953],[101.666,48.963],[101.677,49.193],[101.978,49.373],[102.281,49.432],[102.54,49.641],[102.558,49.79],[102.104,49.962],[102.418,50.3],[102.643,50.41],[102.525,50.595],[102.302,50.682],[102.124,51.362],[101.542,51.5],[101.37,51.456],[100.656,51.727],[99.909,51.746],[99.801,51.915],[99.306,51.958],[98.862,52.136],[98.764,51.87],[98.379,51.74],[97.954,51.334],[97.858,50.96],[97.999,50.876],[98.008,50.669],[98.273,50.539],[98.308,50.323],[98.07,50.036],[97.131,49.791],[96.875,49.509],[96.878,49.369],[97.176,49.167],[97.49,49.166],[97.86,49.007],[98.424,49.002],[98.553,48.935],[98.837,49.11],[99.114,49.114],[99.215,48.759],[99.071,48.53],[99.074,48.296]]]}},{"type":"Feature","properties":{"name":"Баян-Өлгий"},"geometry":{"type":"Polygon","coordinates":[[[90.022,50.001],[89.629,49.919],[89.661,49.7],[88.985,49.464],[88.222,49.48],[88.169,49.292],[87.853,49.12],[87.821,48.804],[87.956,48.593],[88.571,48.363],[88.587,48.225],[89.062,47.987],[89.579,48.033],[89.756,47.829],[90.065,47.876],[90.138,47.722],[90.37,47.655],[90.594,47.166],[90.904,46.954],[91.048,46.72],[91.359,46.555],[91.872,46.639],[91.927,46.703],[91.484,46.914],[91.448,47.207],[91.237,47.369],[91.262,47.496],[90.855,48.12],[90.74,48.652],[91.338,48.672],[91.23,48.925],[91.021,49.039],[90.907,49.264],[90.667,49.339],[90.503,49.584],[90.239,49.721],[90.022,50.001]]]}},{"type":"Feature","properties":{"name":"Дархан-Уул"},"geometry":{"type":"Polygon","coordinates":[[[105.808,49.131],[106.065,49.097],[106.357,49.186],[106.601,49.087],[106.799,49.132],[106.8,49.471],[106.41,49.53],[105.84,49.685],[105.893,49.426],[105.808,49.131]]]}},{"type":"Feature","properties":{"name":"Хэнтий"},"geometry":{"type":"Polygon","coordinates":[[[111.167,46.232],[111.233,46.611],[111.534,47.235],[111.793,47.38],[112.068,47.316],[112.116,47.645],[112.409,47.764],[112.694,47.794],[112.559,48.03],[112.512,48.484],[112.237,48.857],[112.293,48.982],[112.149,49.324],[111.996,49.392],[111.277,49.31],[110.807,49.18],[110.226,49.158],[109.5,49.236],[109.171,49.353],[108.571,49.331],[108.521,49.124],[108.855,48.817],[109.036,48.347],[108.875,48.071],[108.469,47.925],[108.404,47.572],[108.386,47.503],[108.661,47.086],[108.82,46.98],[109.001,46.781],[108.959,46.464],[109.345,46.168],[109.623,46.142],[109.915,46.302],[110.122,46.604],[110.39,46.373],[110.565,46.104],[110.868,46.063],[111.167,46.232]]]}}]};
 const MN_AIMAG_LBL = {"Увс": [49.62, 92.95], "Ховд": [47.09, 92.69], "Завхан": [48.29, 96.45], "Булган": [49.3, 102.75], "Дорноговь": [44.4, 109.79], "Улаанбаатар": [47.95, 106.94], "Говьсүмбэр": [46.47, 108.53], "Сүхбаатар": [46.15, 113.42], "Говь-Алтай": [45.49, 96.02], "Орхон": [49.05, 104.25], "Архангай": [47.83, 101.15], "Баянхонгор": [45.37, 99.67], "Дундговь": [45.52, 106.27], "Өмнөговь": [43.28, 104.12], "Өвөрхангай": [45.84, 102.64], "Төв": [46.9, 105.4], "Дорнод": [48.6, 114.37], "Сэлэнгэ": [49.85, 105.9], "Хөвсгөл": [50.22, 99.9], "Баян-Өлгий": [48.73, 89.94], "Дархан-Уул": [49.45, 106.35], "Хэнтий": [47.89, 110.42]};
@@ -1110,17 +1365,19 @@ async function loadDashboard() {
       <div><label>Хугацаа</label><select id="db_period">${periodOptions}</select></div>
       <div class="f-btns"><button class="secondary" id="db_refresh">Шинэчлэх</button></div><div id="db_msg" class="message"></div></div>
       <div class="kpis" id="db_kpis"></div>
-      <div class="dash-row"><div class="card map-card"><div class="card-h map-h"><span>Монгол Улсын газрын зураг — аймгаар</span><select id="db_metric" class="map-sel"></select></div><div id="db_map"></div><div class="legend" id="db_legend"></div></div>
+      <div class="dash-row"><div class="card map-card"><div class="card-h map-h"><span>Монгол Улсын газрын зураг — аймгаар</span><span class="map-sels"><select id="db_mtype" class="map-sel"></select><select id="db_metric" class="map-sel"></select></span></div><div id="db_map"></div><div class="legend" id="db_legend"></div></div>
         <div class="card"><div class="card-h">Гамшгийн төрөл тус бүрийн тоо</div><div id="db_types"></div></div></div>
       <div class="dash-row"><div class="card" id="db_rankCard"><div class="card-h">Аймаг, байгууллагын эрэмбэ — хяналт шалгалтын гүйцэтгэл</div><div id="db_rank"></div></div>
-        <div class="card"><div class="card-h">Сүүлийн гамшиг, осол</div><div id="db_latest" class="latest"></div></div></div>`;
+        <div class="card"><div class="card-h">Сүүлийн гамшиг, осол</div><div id="db_latest" class="latest"></div></div></div>
+      <div class="dash-row"><div class="card"><div class="card-h map-h"><span>Хамгийн их давтагдсан цэгүүд (сүүлийн ${HOT_YEARS} жил)</span><a class="link-btn" data-go="risk">Бүгдийг харах →</a></div><div id="db_hot" class="latest"></div></div>
+        <div class="card"><div class="card-h">Аймаг бүрийн гол эрсдэл (сүүлийн ${HOT_YEARS} жил)</div><div id="db_toprisk" class="table-wrap"></div></div></div>`;
     box.dataset.ready = 1;
     $("db_year").onchange = $("db_period").onchange = $("db_refresh").onclick = loadDashboard;
   }
   message("db_msg", "Ачаалж байна...");
-  try { await fetchAll($("db_year").value, $("db_period").value); } catch (e) { return message("db_msg", "Алдаа: " + safeError(e), "error"); }
+  try { await Promise.all([fetchAll($("db_year").value, $("db_period").value), fetchRiskData()]); } catch (e) { return message("db_msg", "Алдаа: " + safeError(e), "error"); }
   message("db_msg", "");
-  renderKpis(); renderTypes(); renderMap(); renderRank(); renderLatest();
+  renderKpis(); renderTypes(); renderMap(); renderRank(); renderLatest(); renderRiskCards();
 }
 function renderKpis() {
   const d = DB.dis, v = DB.vio, ym = today().slice(0, 7);
@@ -1178,6 +1435,9 @@ function renderMap() {
       attribution: "© OpenStreetMap, © CARTO · Хил: geoBoundaries (CC BY 4.0)" }).addTo(DB.map);
     DB.map.fitBounds([[41.5, 87.7], [52.2, 119.9]]);
     DB.metric = DB.metric || "dis";
+    DB.showRisk = true; DB.showHot = true;
+    const ts = $("db_mtype");
+    if (ts) { ts.innerHTML = options(LISTS.disasterTypes, "", "Бүх төрөл"); ts.onchange = () => { DB.mtype = ts.value; renderMap(); }; }
     const sel = $("db_metric");
     if (sel) { sel.innerHTML = Object.entries(MAP_METRICS).map(([k, m]) => `<option value="${k}">${esc(m.label)}</option>`).join(""); sel.value = DB.metric;
       sel.onchange = () => { DB.metric = sel.value; renderMap(); }; }
@@ -1186,7 +1446,8 @@ function renderMap() {
   DB.layer = L.layerGroup().addTo(DB.map);
   const M = MAP_METRICS[DB.metric || "dis"];
   const agg = {};
-  DB.dis.forEach(x => { const a = agg[x.aimag] = agg[x.aimag] || { n: 0, v: 0, deaths: 0, injured: 0, loss: 0, types: {} };
+  const mt = DB.mtype || "", DIS_F = DB.dis.filter(x => !mt || x.disaster_type === mt);
+  DIS_F.forEach(x => { const a = agg[x.aimag] = agg[x.aimag] || { n: 0, v: 0, deaths: 0, injured: 0, loss: 0, types: {} };
     a.n++; a.v += M.f(x); a.deaths += num(x.deaths); a.injured += num(x.injured); a.loss += num(x.economic_loss);
     a.types[x.disaster_type] = (a.types[x.disaster_type] || 0) + 1; });
   const max = Math.max(0, ...Object.values(agg).map(a => a.v));
@@ -1201,7 +1462,7 @@ function renderMap() {
       onEachFeature: (f, ly) => {
         const nm = f.properties.name, a = agg[nm];
         const top = a ? Object.entries(a.types).sort((x, y) => y[1] - x[1]).slice(0, 3).map(([t, c]) => `${esc(t)}: ${c}`).join("<br>") : "";
-        ly.bindTooltip(`<b>${esc(nm)}</b><br>${esc(M.label)}: <b>${a ? fmtV(a.v) : 0}</b>`, { sticky: true });
+        ly.bindTooltip(`<b>${esc(nm)}</b><br>${esc((mt ? mt + " — " : "") + M.label)}: <b>${a ? fmtV(a.v) : 0}</b>`, { sticky: true });
         ly.bindPopup(`<b>${esc(nm)}</b><br>Гамшиг, осол: <b>${a ? a.n : 0}</b><br>Нас барсан: ${a ? a.deaths : 0} · Гэмтсэн: ${a ? a.injured : 0}<br>Хохирол: ${a ? money(a.loss) : "0"}${top ? "<hr style='margin:4px 0'>" + top : ""}`);
         ly.on({ mouseover: e => e.target.setStyle({ weight: 2.5, color: "#111827" }), mouseout: e => e.target.setStyle({ weight: 1, color: "#5b6576" }) });
       }
@@ -1214,15 +1475,35 @@ function renderMap() {
       L.marker(c, { interactive: false, icon: L.divIcon({ className: "map-lbl" + (small ? " small" : ""), html, iconSize: [90, 30], iconAnchor: [45, small ? 9 : 15] }) }).addTo(DB.layer);
     });
   }
-  if (DB.showPts) DB.dis.filter(x => x.lat && x.lng).forEach(x => L.circleMarker([x.lat, x.lng], { radius: 5, color: "#fff", weight: 1.5, fillColor: typeColor(x.disaster_type), fillOpacity: 1 })
+  addRiskLayers(DB.layer, mt, { hot: DB.showHot, risk: DB.showRisk });
+  if (DB.showPts) DIS_F.filter(x => x.lat && x.lng).forEach(x => L.circleMarker([x.lat, x.lng], { radius: 5, color: "#fff", weight: 1.5, fillColor: typeColor(x.disaster_type), fillOpacity: 1 })
     .bindPopup(`<b>${esc(x.disaster_type)}</b>${x.title ? "<br>" + esc(x.title) : ""}<br>${esc(dtstr(x.started_at))}<br>${esc([x.aimag, x.soum].filter(Boolean).join(", "))}<br>${esc(lossSummary(x))}`).addTo(DB.layer));
   const sh = v => M.money ? moneyShort(v).replace(" ₮", "") : fmt(v);
   const lb = b => M.money ? (b.first ? "≤ " + sh(b.to) : `${sh(b.from)} – ${sh(b.to)}`) : (b.first ? (b.to <= 1 ? "1" : `1–${b.to}`) : (b.to - b.from === 1 ? String(b.to) : `${b.from + 1}–${b.to}`));
-  $("db_legend").innerHTML = `<span class="lg-t">${esc(M.label)}${M.money ? " (₮)" : ""}:</span><span><i class="sq" style="background:#eef1f5"></i>0</span>` + bins.map(b => `<span><i class="sq" style="background:${b.c}"></i>${lb(b)}</span>`).join("")
-    + `<label class="pts"><input type="checkbox" id="db_pts" ${DB.showPts ? "checked" : ""}> Цэгээр харуулах</label>`;
+  $("db_legend").innerHTML = `<span class="lg-t">${esc((mt ? mt + " — " : "") + M.label)}${M.money ? " (₮)" : ""}:</span><span><i class="sq" style="background:#eef1f5"></i>0</span>` + bins.map(b => `<span><i class="sq" style="background:${b.c}"></i>${lb(b)}</span>`).join("")
+    + `<span class="lg-tg"><label class="pts"><input type="checkbox" id="db_rsk" ${DB.showRisk ? "checked" : ""}> <i class="risk-mini">!</i> Эрсдэлтэй цэг (${RISK.rows.filter(p => !mt || p.risk_type === mt).length})</label>
+       <label class="pts"><input type="checkbox" id="db_hotc" ${DB.showHot ? "checked" : ""}> <i class="hot-mini">n</i> Давтагдсан цэг</label>
+       <label class="pts"><input type="checkbox" id="db_pts" ${DB.showPts ? "checked" : ""}> Осол бүрийг цэгээр</label></span>`;
   $("db_pts").onchange = e => { DB.showPts = e.target.checked; renderMap(); };
+  $("db_rsk").onchange = e => { DB.showRisk = e.target.checked; renderMap(); };
+  $("db_hotc").onchange = e => { DB.showHot = e.target.checked; renderMap(); };
   setTimeout(() => DB.map.invalidateSize(), 50);
 }
+function renderRiskCards() {
+  const hot = computeHotspots(RISK.hist).slice(0, 8);
+  $("db_hot").innerHTML = hot.map(h => `<div class="li"><span class="hot-mini" style="--c:${typeColor(h.type)}">${h.n}</span><div><b>${esc(h.type)}</b> — ${esc([h.aimag, h.soum].filter(Boolean).join(", "))}
+    <br><span class="muted">${h.n} удаа${h.deaths ? ", нас барсан " + h.deaths : ""} · сүүлд ${esc(String(h.last).slice(0, 10))}</span></div>
+    <button class="sm secondary" data-hot-zoom="${h.lat},${h.lng}">Харах</button></div>`).join("") || '<p class="muted">Давтагдсан цэг илрээгүй (GPS солбицолтой бүртгэл шаардлагатай).</p>';
+  const top = aimagTopRisks(RISK.hist);
+  $("db_toprisk").innerHTML = `<table class="compact"><tr><th>Аймаг</th><th>Хамгийн их давтагддаг осол</th><th>Хаана</th></tr>${top.map(a => { const t = a.top[0];
+    return `<tr><td>${esc(a.aimag)}</td><td><i class="dot" style="background:${typeColor(t.type)}"></i> <b>${esc(t.type)}</b> — ${t.n}/${a.n}</td><td>${esc(t.soum ? `${t.soum} (${t.soumN})` : "—")}</td></tr>`; }).join("")
+    || '<tr><td colspan="3" class="muted">Бүртгэл алга.</td></tr>'}</table>`;
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-hot-zoom]"); if (!t || !DB.map) return;
+  const [a, b] = t.dataset.hotZoom.split(",").map(Number); DB.showHot = true; DB.mtype = ""; if ($("db_mtype")) $("db_mtype").value = "";
+  renderMap(); DB.map.setView([a, b], 11); $("db_map").scrollIntoView({ behavior: "smooth", block: "center" });
+});
 function orgPerformance() {
   return S.orgs.map(o => {
     const ins = DB.ins.filter(x => x.org_id === o.id), vio = DB.vio.filter(x => x.org_id === o.id), plan = num(DB.plans.find(p => p.org_id === o.id)?.planned);
