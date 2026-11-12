@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="mn"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Гамшгаас хамгаалах улсын хяналтын нэгдсэн цахим систем</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f3f5f9;color:#1f2937}
+h2{color:#1d3d6e;margin:0 0 12px}h3{color:#1d3d6e;margin:22px 0 4px;font-size:16px;border-bottom:1px solid #e3e7ee;padding-bottom:6px}
+label{display:block;margin:10px 0 5px;font-weight:600;font-size:14px}
+input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px;font-family:inherit;background:#fff}textarea{min-height:80px}
+input:focus,select:focus,textarea:focus{outline:2px solid #93b4e8;border-color:#5b8ad6}
+button{padding:10px 15px;background:#1d4f91;color:#fff;border:0;border-radius:8px;margin:4px 3px;font-weight:600;cursor:pointer;font-size:14px}
+button:hover{filter:brightness(1.1)}button:disabled{opacity:.6;cursor:wait}
+.secondary{background:#64748b}.danger{background:#c0392b}.green{background:#16834a}.warn{background:#d97706}
+.sm{padding:6px 10px;font-size:13px;margin:2px}.full{width:100%;margin:16px 0 0}
+.link-btn{background:none;color:#1d4f91;padding:6px 0;margin:4px 6px 4px 0;font-weight:600}.link-btn:hover{text-decoration:underline}
+.hidden{display:none!important}.page-off{display:none!important}.muted{color:#64748b;font-size:13px}.red{color:#c0392b}.pad{padding:16px}
+.message{margin-top:8px;font-weight:600;overflow-wrap:anywhere}.success{color:#16834a}.error{color:#c0392b}
+.card{background:#fff;padding:18px;border-radius:12px;margin-bottom:16px;border:1px solid #e3e7ee}
+.card-h{font-weight:700;color:#1d3d6e;margin:-2px 0 12px;font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0 14px}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.actions{margin-top:18px}.checks{display:flex;flex-wrap:wrap;gap:6px 18px}.chk{display:flex;align-items:center;gap:6px;font-weight:500}.chk input{width:auto}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+th,td{border:1px solid #e3e7ee;padding:8px;text-align:left;vertical-align:top}th{background:#1d4f91;color:#fff;font-weight:600}
+table.kv th{background:#f1f5fb;color:#1d3d6e;width:170px}table.checklist td:last-child select{padding:6px}
+table.stat td:not(:first-child){text-align:right}tr.tot td{font-weight:700;background:#f1f5fb}.row-late td{background:#fff5f4}
+.acts{min-width:150px}.acts .sm{display:block;width:100%;margin:2px 0}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.b-blue{background:#e3edfb;color:#1d4f91}.b-green{background:#ddf3e6;color:#11683a}.b-red{background:#fde4e1;color:#a52a1d}.b-amber{background:#fdf0d5;color:#8a5a00}.b-gray{background:#e9edf2;color:#475569}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:8px}.filters>div{min-width:150px}.filters label{margin-top:0}.f-btns{display:flex}
+.viol-sec{background:#fffaf0;border:1px solid #f3dfb5;border-radius:10px;padding:4px 14px 12px;margin-top:16px}
+.viol-row{background:#fff;border:1px solid #ecdcbc;border-radius:8px;padding:10px 12px;margin:10px 0}.viol-head{display:flex;justify-content:space-between;align-items:center}
+.mini-kpis{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0}.mk{background:#f1f5fb;border-radius:8px;padding:8px 14px;display:flex;flex-direction:column}.mk span{font-size:12px;color:#64748b}.mk b{font-size:18px;color:#1d3d6e}
+/* бүтэц */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#7a1f1f,#1d4f91)}
+.login-card{background:#fff;border-radius:16px;padding:30px;width:100%;max-width:440px;box-shadow:0 20px 50px #0003}
+.login-card .brand{font-size:36px;font-weight:300;color:#b42318;letter-spacing:1px}.brand-sub{color:#64748b;margin:2px 0 14px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:252px;flex:0 0 252px;background:#14284b;color:#dbe4f3;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:auto}
+.logo{padding:18px 20px 20px;border-bottom:1px solid #ffffff1a}.logo-mark{display:block;font-size:30px;font-weight:300;color:#fff;line-height:1}.logo-sub{font-size:12px;color:#9fb2d3}
+#sideNav{flex:1;padding:10px}
+.nav-item,.nav-head{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 12px;margin:2px 0;border-radius:8px;color:#e6edf8;font-weight:600;font-size:14px;text-decoration:none;background:none;border:0;cursor:pointer;text-align:left}
+.nav-item:hover,.nav-head:hover{background:#ffffff14}.nav-item.active{background:#b42318;color:#fff}
+.chev{font-size:10px;transition:transform .2s;color:#9fb2d3}.nav-group.open .chev{transform:rotate(90deg)}
+.nav-sub{display:none;padding:2px 0 6px}.nav-group.open .nav-sub{display:block}
+.nav-sub a{display:block;padding:7px 12px 7px 30px;border-radius:7px;color:#b8c7e0;font-size:13.5px;text-decoration:none;cursor:pointer}
+.nav-sub a:hover{background:#ffffff14}.nav-sub a.active{color:#fff;background:#b42318}
+.ver{padding:14px 20px;font-size:12px;color:#7f93b8;border-top:1px solid #ffffff1a}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:500;background:#fff;height:58px;display:flex;align-items:center;gap:12px;padding:0 20px;box-shadow:0 2px 8px #0000000d}
+.icon-btn{background:none;color:#1f2937;font-size:20px;padding:4px 8px;margin:0}.icon-btn:hover{background:#f1f3f7}
+.top-title{font-size:18px;font-weight:700;flex:1;color:#1d3d6e}.top-user{display:flex;align-items:center;gap:8px;font-size:13px;color:#475569}.top-user button{margin:0;padding:7px 12px}
+.content{padding:20px;max-width:1400px;width:100%}.overlay{display:none}
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid #e3e7ee;border-top:5px solid #1d4f91;cursor:pointer;transition:box-shadow .15s}.kpi:hover{box-shadow:0 6px 18px #0000001a}
+.kpi-t{font-size:13px;font-weight:600;color:#475569}.kpi-v{font-size:23px;font-weight:700;color:#14284b;margin:6px 0 2px;line-height:1.15}.kpi-s{font-size:12px;color:#64748b}
+.k-warn{border-top-color:#e8892b}.k-red{border-top-color:#b42318}.k-amber{border-top-color:#c9a227}.k-blue{border-top-color:#2a7fb8}.k-purple{border-top-color:#6a5acd}.k-green{border-top-color:#16834a}.k-crit{border-top-color:#7a1f1f;background:#fff8f7}
+.dash-row{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}
+.map-card #db_map{height:440px;border-radius:8px;border:1px solid #e3e7ee}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12px;color:#475569}.legend span{display:flex;align-items:center;gap:5px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:0 0 10px}.dot.big{width:14px;height:14px;background:#e04f3947;border:1px solid #b42318}
+.map-count{background:none;color:#7a1f1f;font-weight:700;font-size:12px;text-align:center;line-height:18px}
+.hb{display:grid;grid-template-columns:150px 1fr 70px;gap:8px;align-items:center;margin:6px 0;font-size:13px}.hb-l{text-align:right;color:#334155}
+.hb-t{background:#eef2f7;border-radius:5px;height:14px;overflow:hidden;display:block}.hb-f{display:block;height:100%;border-radius:5px}.hb-v{color:#14284b}
+.rank{max-height:520px;overflow:auto}.rk{display:grid;grid-template-columns:28px 190px 1fr 56px 96px 100px;gap:8px;align-items:center;margin:5px 0;font-size:13px}
+.rk-n{font-weight:700;color:#64748b;text-align:right}.rk-v{text-align:right}.rk-p{color:#475569}
+.latest{max-height:520px;overflow:auto}.li{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #eef2f7;font-size:13.5px}.li .dot{margin-top:5px}
+/* modal */
+.modal{position:fixed;inset:0;background:#0008;z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#fff;border-radius:14px;padding:20px;width:100%;max-width:640px;max-height:90vh;overflow:auto}.modal-box.wide{max-width:980px}
+.modal-h{display:flex;justify-content:space-between;align-items:center}.modal-h h2{margin:0}
+@media(max-width:1000px){.dash-row{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.sidebar{position:fixed;left:0;top:0;z-index:1500;transform:translateX(-100%);transition:transform .2s}
+ .app.nav-open .sidebar{transform:none}.app.nav-open .overlay{display:block;position:fixed;inset:0;background:#0005;z-index:1400}
+ .content{padding:10px}.top-user span{display:none}.grid,.g3{grid-template-columns:1fr}.rk{grid-template-columns:24px 120px 1fr 50px}.rk-p,.rk .badge{display:none}.hb{grid-template-columns:100px 1fr 50px}}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head><body>
+
+<section id="loginSection" class="login-wrap"><div class="login-card">
+  <div class="brand">ГХУХ</div><div class="brand-sub">Гамшгаас хамгаалах улсын хяналтын нэгдсэн цахим систем</div>
+  <h2>Системд нэвтрэх</h2>
+  <label>И-мэйл</label><input id="email" type="email" autocomplete="username">
+  <label>Нууц үг</label><input id="password" type="password" autocomplete="current-password">
+  <button id="loginBtn" class="full">Нэвтрэх</button>
+  <button id="forgotBtn" type="button" class="link-btn">Нууц үгээ мартсан уу?</button>
+  <div id="loginStatus" class="message"></div>
+</div></section>
+
+<div id="app" class="app hidden">
+<aside class="sidebar">
+  <div class="logo"><span class="logo-mark">ГХУХ</span><span class="logo-sub">Гамшгаас хамгаалах улсын хяналтын нэгдсэн цахим систем</span></div>
+  <nav id="sideNav">
+    <a class="nav-item" data-go="dash">01 · Нэгдсэн Dashboard</a>
+    <div class="nav-group open"><button class="nav-head">02 · Гамшиг, осол <span class="chev">▶</span></button><div class="nav-sub">
+      <a data-go="disForm">Бүртгэх</a><a data-go="disList">Бүртгэлийн жагсаалт</a></div></div>
+    <div class="nav-group open"><button class="nav-head">03 · Улсын хяналт шалгалт <span class="chev">▶</span></button><div class="nav-sub">
+      <a data-go="inspForm">Шалгалт бүртгэх</a><a data-go="inspList">Шалгалтын жагсаалт</a><a data-go="plans">Шалгалтын төлөвлөгөө</a></div></div>
+    <a class="nav-item" data-go="viol">04 · Зөрчил, шаардлага</a>
+    <a class="nav-item" data-go="stats">05 · Тайлан, статистик</a>
+    <a class="nav-item" data-go="users">06 · Байгууллага, хэрэглэгч</a>
+  </nav>
+  <div class="ver">Хувилбар 1.0 © ОБЕГ</div>
+</aside>
+<div class="overlay" id="navOverlay"></div>
+<div class="main">
+  <div class="topbar"><button id="navToggle" class="icon-btn" title="Цэс">☰</button><div class="top-title" id="pageTitle"></div>
+    <div class="top-user"><span id="userInfo"></span><button id="pwOpenBtn" class="secondary">Нууц үг солих</button><button id="logoutBtn" class="secondary">Гарах</button></div></div>
+  <div class="content">
+    <section data-page="dash" id="dashBox"></section>
+    <section data-page="disForm" class="card" id="disFormBox"></section>
+    <section data-page="disList" class="card" id="disListBox"></section>
+    <section data-page="inspForm" class="card" id="inspFormBox"></section>
+    <section data-page="inspList" class="card" id="inspListBox"></section>
+    <section data-page="viol" class="card" id="violBox"></section>
+    <section data-page="stats" id="statsBox"></section>
+    <section data-page="plans" class="card" id="plansBox"></section>
+    <section data-page="users" id="usersBox"></section>
+  </div>
+</div>
+</div>
+
+<div id="modal" class="modal hidden"><div id="modalBox" class="modal-box"><div class="modal-h"><h2 id="modalTitle"></h2><button id="modalClose" class="icon-btn">✕</button></div><div id="modalBody"></div></div></div>
+
+<div id="pwModal" class="modal hidden"><div class="login-card">
+  <h2 id="pwTitle">Нууц үг солих</h2><p id="pwNote" class="muted"></p>
+  <label>Шинэ нууц үг (8+ тэмдэгт, үсэг ба тоо)</label><input id="pwNew" type="password" autocomplete="new-password">
+  <label>Шинэ нууц үг (давтах)</label><input id="pwNew2" type="password" autocomplete="new-password">
+  <button id="pwSave">Хадгалах</button><button id="pwCancel" class="secondary">Болих</button><div id="pwStatus" class="message"></div>
+</div></div>
+
+<script>
+/* ===== js/config.js ===== */
+"use strict";
+/* =====================================================================
+   ТОХИРГОО — зөвхөн энэ файлыг засна.
+   Supabase → Project Settings → API хэсгээс URL ба publishable (anon) key-г хуулна.
+   ===================================================================== */
+const SUPABASE_URL = "https://guhjqeqzjvesybbbvehf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_flXAp4a1RuWpb5dUpiqgFg_gSqx0ypW";
+const BUCKET = "hyanalt-files";
+
+/* Жагсаалтууд — шаардлагатай бол нэмж, хасаж болно */
+const LISTS = {
+  disasterTypes: ["Үер", "Гал түймэр", "Ой, хээрийн түймэр", "Газар хөдлөлт", "Хүчтэй салхи, шуурга", "Цасан шуурга", "Зуд", "Аянга", "Аюултай бодисын осол", "Тээврийн осол", "Барилга байгууламж нурах", "Халдварт өвчин", "Бусад осол"],
+  responseActions: ["Аврах", "Унтраах", "Нүүлгэн шилжүүлэх", "Эмнэлгийн анхны тусламж", "Хүмүүнлэгийн тусламж", "Хорио цээр", "Сэргээн босгох"],
+  inspectionTypes: ["Төлөвлөгөөт", "Төлөвлөгөөт бус", "Гүйцэтгэлийн шалгалт", "Гомдол, мэдээллээр"],
+  topics: ["Гал түймрийн аюулгүй байдал", "Гамшгаас хамгаалах төлөвлөгөө", "Аюултай бодис, химийн хор", "Барилга байгууламжийн аюулгүй байдал", "Гамшгаас хамгаалах хүч, хэрэгсэл", "Сургалт, дадлага", "Бусад"],
+  targetTypes: ["Төрийн байгууллага", "Аж ахуйн нэгж", "Боловсролын байгууллага", "Эрүүл мэндийн байгууллага", "Үйлдвэр", "Олон нийтийн газар", "Орон сууц", "Бусад"],
+  requirementTypes: ["Улсын байцаагчийн албан шаардлага", "Акт", "Зөвлөмж"],
+  penaltyTypes: ["Байхгүй", "Сануулга", "Торгууль", "Үйл ажиллагааг түр зогсоох"],
+  checklist: [
+    "Гамшгаас хамгаалах төлөвлөгөө батлагдсан, шинэчлэгдсэн эсэх",
+    "Гамшгаас хамгаалах мэргэжлийн анги, бүлэг байгуулагдсан эсэх",
+    "Гал унтраах анхан шатны хэрэгсэл хангалттай, ажиллагаатай эсэх",
+    "Галын дохиолол, автомат унтраах систем ажиллагаатай эсэх",
+    "Гарц, зугтах зам чөлөөтэй, тэмдэглэгээтэй эсэх",
+    "Цахилгааны утас, тоноглол аюулгүй эсэх",
+    "Аюултай бодисын хадгалалт, бүртгэл шаардлага хангасан эсэх",
+    "Ажилтнууд гамшгаас хамгаалах сургалтад хамрагдсан эсэх",
+    "Дадлага, сургуулилт төлөвлөгөөний дагуу хийгдсэн эсэх",
+    "Өмнөх шалгалтын зөрчил арилгагдсан эсэх"
+  ]
+};
+
+/* Аймгийн төвүүдийн солбицол (газрын зурагт) */
+const AIMAG_CENTERS = {
+  "Архангай": [47.47, 101.45], "Баян-Өлгий": [48.97, 89.96], "Баянхонгор": [46.19, 100.72], "Булган": [48.81, 103.53],
+  "Говь-Алтай": [46.37, 96.26], "Говьсүмбэр": [46.36, 108.36], "Дархан-Уул": [49.47, 105.97], "Дорноговь": [44.89, 110.14],
+  "Дорнод": [48.07, 114.53], "Дундговь": [45.76, 106.27], "Завхан": [47.74, 96.84], "Орхон": [49.03, 104.08],
+  "Өвөрхангай": [46.26, 102.78], "Өмнөговь": [43.57, 104.42], "Сүхбаатар": [46.68, 113.28], "Сэлэнгэ": [50.23, 106.21],
+  "Төв": [47.71, 106.95], "Увс": [49.98, 92.07], "Ховд": [48.01, 91.64], "Хөвсгөл": [49.64, 100.16],
+  "Хэнтий": [47.32, 110.65], "Улаанбаатар": [47.92, 106.92]
+};
+const AIMAGS = Object.keys(AIMAG_CENTERS);
+
+</script>
+<script>
+/* ===== js/core.js ===== */
+"use strict";
+/* =====================================================================
+   ҮНДСЭН ХЭСЭГ: туслах функц, нэвтрэх, цэс, нууц үг, файл, цонх
+   ===================================================================== */
+const S = { sb: null, user: null, profile: null, orgs: [], orgById: {} };
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = v => Number(v || 0);
+const fmt = v => num(v).toLocaleString("en-US");
+const money = v => fmt(Math.round(num(v))) + " ₮";
+const moneyShort = v => { const n = num(v); return n >= 1e9 ? (n / 1e9).toFixed(2).replace(/\.?0+$/, "") + " тэрбум ₮" : n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + " сая ₮" : money(n); };
+const today = () => new Date().toISOString().slice(0, 10);
+const dstr = v => v ? String(v).slice(0, 10) : "";
+const dtstr = v => v ? new Date(v).toLocaleString("sv-SE", { hour12: false }).slice(0, 16) : "";
+const role = () => S.profile?.role;
+const isAdmin = () => role() === "admin";
+const isOrg = () => role() === "org";
+const seeAll = () => role() === "admin" || role() === "viewer";
+const orgName = id => S.orgById[id]?.name || "—";
+const safeError = e => (e && (e.message || e.error_description || e.msg)) || String(e);
+function message(id, text, type) { const el = $(id); if (!el) return; el.textContent = text || ""; el.className = "message" + (type ? " " + type : ""); }
+function options(list, selected, empty) { return (empty !== undefined ? `<option value="">${esc(empty)}</option>` : "") + list.map(v => `<option${v === selected ? " selected" : ""}>${esc(v)}</option>`).join(""); }
+function orgOptions(selected, empty) { return (empty !== undefined ? `<option value="">${esc(empty)}</option>` : "") + S.orgs.map(o => `<option value="${o.id}"${String(o.id) === String(selected) ? " selected" : ""}>${esc(o.name)}</option>`).join(""); }
+function yearOptions(sel) { let h = ""; for (let y = new Date().getFullYear() + 1; y >= 2020; y--) h += `<option value="${y}"${y === Number(sel) ? " selected" : ""}>${y} он</option>`; return h; }
+function badge(text) {
+  const c = { "Бүртгэгдсэн": "b-blue", "Баталгаажсан": "b-green", "Буцаасан": "b-red", "Хаагдсан": "b-gray", "Биелээгүй": "b-red", "Хэрэгжиж байна": "b-amber", "Арилгасан": "b-green", "Хугацаа хэтэрсэн": "b-red", "Зөрчилтэй": "b-amber", "Зөрчилгүй": "b-green" }[text] || "b-gray";
+  return `<span class="badge ${c}">${esc(text)}</span>`;
+}
+function yearRange(y) { return [`${y}-01-01`, `${Number(y) + 1}-01-01`]; }
+function isOverdue(v) { return v.status !== "Арилгасан" && v.deadline && v.deadline < today(); }
+function violStatus(v) { return isOverdue(v) ? "Хугацаа хэтэрсэн" : v.status; }
+
+/* ---------- Цонх (modal) ---------- */
+function openModal(title, html, wide) {
+  $("modalTitle").textContent = title; $("modalBody").innerHTML = html;
+  $("modalBox").classList.toggle("wide", !!wide); $("modal").classList.remove("hidden");
+}
+function closeModal() { $("modal").classList.add("hidden"); $("modalBody").innerHTML = ""; }
+
+/* ---------- Файл ---------- */
+async function uploadFiles(fileList, kind) {
+  const paths = [];
+  for (const f of Array.from(fileList || [])) {
+    if (f.size > 20 * 1024 * 1024) throw new Error(`"${f.name}" файл 20 MB-аас их байна.`);
+    const ext = (f.name.match(/\.[A-Za-z0-9]{1,8}$/) || [""])[0].toLowerCase();
+    const base = f.name.slice(0, f.name.length - ext.length).replace(/[^A-Za-z0-9А-Яа-яӨөҮүЁё_-]+/g, "_").slice(0, 60) || "file";
+    const path = `${S.user.id}/${kind}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}__${base}${ext}`;
+    const { error } = await S.sb.storage.from(BUCKET).upload(path, f, { contentType: f.type || undefined });
+    if (error) throw error;
+    paths.push(path);
+  }
+  return paths;
+}
+function fileLabel(p) { const n = String(p).split("/").pop(); return n.includes("__") ? n.split("__").slice(1).join("__") : n; }
+function fileButtons(paths) {
+  if (!paths || !paths.length) return '<span class="muted">—</span>';
+  return paths.map(p => `<button class="link-btn" data-file="${esc(p)}">📎 ${esc(fileLabel(p))}</button>`).join(" ");
+}
+async function openFile(path) {
+  const w = window.open("", "_blank");
+  try {
+    const { data, error } = await S.sb.storage.from(BUCKET).createSignedUrl(path, 600);
+    if (error) throw error;
+    if (w) w.location = data.signedUrl; else location.href = data.signedUrl;
+  } catch (e) { if (w) w.close(); alert("Файл нээж чадсангүй: " + safeError(e)); }
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-file]"); if (b) { e.preventDefault(); openFile(b.dataset.file); } });
+
+/* ---------- Excel ба хэвлэх ---------- */
+function exportExcel(fileName, sheets) {
+  if (!window.XLSX) return alert("Excel сан ачаалагдсангүй. Интернэт холболтоо шалгана уу.");
+  const wb = XLSX.utils.book_new();
+  sheets.forEach(s => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s.rows), s.name.slice(0, 31)));
+  XLSX.writeFile(wb, fileName);
+}
+function printHtml(title, html) {
+  const w = window.open("", "_blank"); if (!w) return alert("Popup цонхыг зөвшөөрнө үү.");
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#1f2937}h1{font-size:20px}h2{font-size:16px;margin-top:22px}table{border-collapse:collapse;width:100%;font-size:12px;margin-top:8px}th,td{border:1px solid #999;padding:5px;text-align:left}th{background:#e5e7eb}</style></head><body><h1>${esc(title)}</h1><p>Хэвлэсэн: ${esc(dtstr(new Date()))}</p>${html}<script>onload=()=>setTimeout(()=>print(),300)<\/script></body></html>`);
+  w.document.close();
+}
+function tableHtml(rows) { return `<table>${rows.map((r, i) => `<tr>${r.map(c => i ? `<td>${esc(c)}</td>` : `<th>${esc(c)}</th>`).join("")}</tr>`).join("")}</table>`; }
+
+/* ---------- Цэс, хуудас ---------- */
+const PAGES = {
+  dash: { title: "Нэгдсэн Dashboard", roles: ["admin", "viewer", "org"], load: () => loadDashboard() },
+  disForm: { title: "Гамшиг, осол бүртгэх", roles: ["admin", "org"], load: () => openDisasterForm() },
+  disList: { title: "Гамшиг, ослын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadDisasters() },
+  inspForm: { title: "Хяналт шалгалт бүртгэх", roles: ["admin", "org"], load: () => openInspectionForm() },
+  inspList: { title: "Хяналт шалгалтын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadInspections() },
+  viol: { title: "Зөрчил, шаардлагын биелэлт", roles: ["admin", "viewer", "org"], load: () => loadViolations() },
+  stats: { title: "Тайлан, статистик", roles: ["admin", "viewer", "org"], load: () => loadStats() },
+  plans: { title: "Шалгалтын төлөвлөгөө", roles: ["admin"], load: () => loadPlans() },
+  users: { title: "Байгууллага, хэрэглэгч", roles: ["admin"], load: () => loadUsers() }
+};
+const allowed = k => PAGES[k] && PAGES[k].roles.includes(role());
+function refreshNav() { document.querySelectorAll("#sideNav [data-go]").forEach(a => a.style.display = allowed(a.dataset.go) ? "" : "none"); }
+let currentPage = null;
+function go(k, opts) {
+  if (!allowed(k)) k = "dash";
+  currentPage = k;
+  document.querySelectorAll("[data-page]").forEach(s => s.classList.toggle("page-off", s.dataset.page !== k));
+  document.querySelectorAll("#sideNav [data-go]").forEach(a => a.classList.toggle("active", a.dataset.go === k));
+  $("pageTitle").textContent = PAGES[k].title;
+  if (location.hash !== "#" + k) history.replaceState(null, "", "#" + k);
+  $("app").classList.remove("nav-open"); window.scrollTo(0, 0);
+  if (!(opts && opts.noLoad)) Promise.resolve(PAGES[k].load()).catch(e => alert("Алдаа: " + safeError(e)));
+}
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]"); if (g) { e.preventDefault(); go(g.dataset.go); }
+  const h = e.target.closest(".nav-head"); if (h) h.parentElement.classList.toggle("open");
+});
+
+/* ---------- Нэвтрэх ---------- */
+async function login() {
+  message("loginStatus", "Нэвтэрч байна...");
+  try {
+    const { data, error } = await S.sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+    if (error) throw error;
+    S.user = data.user; await showApp();
+  } catch (e) { message("loginStatus", "Нэвтэрч чадсангүй: " + safeError(e), "error"); }
+}
+async function logout() { await S.sb.auth.signOut(); location.hash = ""; location.reload(); }
+async function forgotPw() {
+  const email = $("email").value.trim();
+  if (!email) return message("loginStatus", "И-мэйлээ бичээд дахин дарна уу.", "error");
+  try {
+    const { error } = await S.sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (error) throw error;
+    message("loginStatus", "Сэргээх холбоосыг и-мэйлээр илгээлээ.", "success");
+  } catch (e) { message("loginStatus", "Алдаа: " + safeError(e), "error"); }
+}
+async function showApp() {
+  const pr = await S.sb.from("profiles").select("*").eq("user_id", S.user.id).maybeSingle();
+  if (pr.error) throw pr.error;
+  if (!pr.data) { message("loginStatus", "Таны эрх тохируулагдаагүй байна. Админд хандана уу.", "error"); await S.sb.auth.signOut(); return; }
+  S.profile = pr.data;
+  const og = await S.sb.from("orgs").select("*").eq("active", true).order("sort_order");
+  if (og.error) throw og.error;
+  S.orgs = og.data || []; S.orgById = Object.fromEntries(S.orgs.map(o => [o.id, o]));
+  $("loginSection").classList.add("hidden"); $("app").classList.remove("hidden");
+  $("userInfo").textContent = (S.profile.full_name || S.user.email) + " · " + ({ admin: "Админ", viewer: "Удирдлага", org: "Байгууллага" }[role()] || "");
+  refreshNav();
+  go(location.hash.slice(1) || "dash");
+  if (PW_RECOVERY) openPw(true, "Нууц үг сэргээх холбоосоор орлоо. Шинэ нууц үгээ оруулна уу.");
+  else if (!S.user.user_metadata?.pw_changed) openPw(true, "Аюулгүй байдлын үүднээс анхны нууц үгээ өөрийн нууц үгээр солино уу.");
+}
+
+/* ---------- Нууц үг ---------- */
+const PW_RECOVERY = /type=recovery/.test(location.hash);
+let pwForced = false;
+function openPw(forced, note) {
+  pwForced = forced; $("pwNew").value = ""; $("pwNew2").value = ""; message("pwStatus", "");
+  $("pwTitle").textContent = forced ? "Шинэ нууц үг тохируулах" : "Нууц үг солих"; $("pwNote").textContent = note || "";
+  $("pwCancel").classList.toggle("hidden", forced); $("pwModal").classList.remove("hidden");
+}
+async function savePw() {
+  const a = $("pwNew").value, b = $("pwNew2").value;
+  if (a.length < 8) return message("pwStatus", "Дор хаяж 8 тэмдэгт байна.", "error");
+  if (!/[A-Za-zА-Яа-яӨөҮүЁё]/.test(a) || !/\d/.test(a)) return message("pwStatus", "Үсэг болон тоо хоёуланг агуулна.", "error");
+  if (a !== b) return message("pwStatus", "Давтсан нууц үг таарахгүй байна.", "error");
+  $("pwSave").disabled = true; message("pwStatus", "Хадгалж байна...");
+  try {
+    const x = await S.sb.auth.updateUser({ password: a, data: { pw_changed: true } });
+    if (x.error) throw x.error;
+    S.user = x.data.user || S.user; message("pwStatus", "Амжилттай солигдлоо.", "success");
+    setTimeout(() => $("pwModal").classList.add("hidden"), 800);
+  } catch (e) { message("pwStatus", "Алдаа: " + safeError(e), "error"); } finally { $("pwSave").disabled = false; }
+}
+
+</script>
+<script>
+/* ===== js/disasters.js ===== */
+"use strict";
+/* =====================================================================
+   ГАМШИГ, ОСЛЫН БҮРТГЭЛ
+   ===================================================================== */
+let DIS = { rows: [], editing: null };
+
+function lossSummary(d) {
+  const p = [];
+  if (num(d.deaths)) p.push(`нас барсан ${d.deaths}`);
+  if (num(d.injured)) p.push(`гэмтсэн ${d.injured}`);
+  if (num(d.livestock_loss)) p.push(`мал ${fmt(d.livestock_loss)}`);
+  if (num(d.economic_loss)) p.push(money(d.economic_loss));
+  return p.join(", ") || "—";
+}
+
+function openDisasterForm(row) {
+  DIS.editing = row || null;
+  const d = row || { aimag: S.orgById[S.profile.org_id]?.aimag || "", started_at: new Date().toISOString(), response_actions: [] };
+  const n = (k, label) => `<div><label>${label}</label><input type="number" min="0" step="1" id="d_${k}" value="${num(d[k])}"></div>`;
+  $("disFormBox").innerHTML = `
+    <h2>${row ? "Гамшиг, осол засах" : "Гамшиг, осол бүртгэх"}</h2>
+    ${isAdmin() ? `<label>Бүртгэж буй байгууллага *</label><select id="d_org">${orgOptions(d.org_id, "— сонгох —")}</select>` : ""}
+    <div class="grid">
+      <div><label>Гамшиг, ослын төрөл *</label><select id="d_type">${options(LISTS.disasterTypes, d.disaster_type, "— сонгох —")}</select></div>
+      <div><label>Товч нэр</label><input id="d_title" value="${esc(d.title)}" placeholder="Жишээ: Сэлэнгэ голын үер"></div>
+    </div>
+    <h3>Байршил</h3>
+    <div class="grid g3">
+      <div><label>Аймаг, нийслэл *</label><select id="d_aimag">${options(AIMAGS, d.aimag, "— сонгох —")}</select></div>
+      <div><label>Сум, дүүрэг</label><input id="d_soum" value="${esc(d.soum)}"></div>
+      <div><label>Баг, хороо</label><input id="d_bag" value="${esc(d.bag)}"></div>
+    </div>
+    <div class="grid g3">
+      <div><label>Өргөрөг (lat)</label><input id="d_lat" type="number" step="any" value="${d.lat ?? ""}" placeholder="47.92"></div>
+      <div><label>Уртраг (lng)</label><input id="d_lng" type="number" step="any" value="${d.lng ?? ""}" placeholder="106.92"></div>
+      <div><label>&nbsp;</label><button type="button" class="secondary" id="d_gps">📍 Миний байршил</button></div>
+    </div>
+    <h3>Хугацаа</h3>
+    <div class="grid">
+      <div><label>Эхэлсэн огноо, цаг *</label><input id="d_start" type="datetime-local" value="${dtstr(d.started_at).replace(" ", "T")}"></div>
+      <div><label>Дууссан огноо, цаг</label><input id="d_end" type="datetime-local" value="${dtstr(d.ended_at).replace(" ", "T")}"></div>
+    </div>
+    <label>Тайлбар</label><textarea id="d_desc">${esc(d.description)}</textarea>
+    <label>Шалтгаан</label><input id="d_cause" value="${esc(d.cause)}">
+    <h3>Хохирол</h3>
+    <div class="grid g4">${n("deaths", "Нас барсан")}${n("injured", "Гэмтсэн")}${n("missing", "Сураггүй")}${n("evacuated", "Нүүлгэн шилжүүлсэн")}${n("affected", "Өртсөн хүн")}${n("livestock_loss", "Хорогдсон мал")}${n("buildings_damaged", "Гэмтсэн барилга")}
+      <div><label>Материаллаг хохирол (₮)</label><input type="number" min="0" step="1000" id="d_economic_loss" value="${num(d.economic_loss)}"></div></div>
+    <h3>Хариу арга хэмжээ</h3>
+    <div class="checks">${LISTS.responseActions.map(a => `<label class="chk"><input type="checkbox" value="${esc(a)}"${(d.response_actions || []).includes(a) ? " checked" : ""}> ${esc(a)}</label>`).join("")}</div>
+    <div class="grid">${n("forces_people", "Ажилласан хүч (хүн)")}${n("forces_vehicles", "Техник (тоо)")}</div>
+    <label>Фото зураг, нотлох баримт (олон файл сонгож болно)</label><input id="d_files" type="file" multiple accept="image/*,.pdf,.doc,.docx">
+    ${row && row.files?.length ? `<p class="muted">Одоо байгаа файл: ${fileButtons(row.files)}</p>` : ""}
+    <div class="actions"><button id="d_save">${row ? "Хадгалах" : "Бүртгэх"}</button>${row ? '<button class="secondary" id="d_cancel">Болих</button>' : ""}</div>
+    <div id="d_msg" class="message"></div>`;
+  $("d_aimag").onchange = () => { const c = AIMAG_CENTERS[$("d_aimag").value]; if (c && !$("d_lat").value) { $("d_lat").value = c[0]; $("d_lng").value = c[1]; } };
+  $("d_gps").onclick = () => {
+    if (!navigator.geolocation) return message("d_msg", "Энэ төхөөрөмж байршил тодорхойлохгүй байна.", "error");
+    navigator.geolocation.getCurrentPosition(p => { $("d_lat").value = p.coords.latitude.toFixed(5); $("d_lng").value = p.coords.longitude.toFixed(5); },
+      () => message("d_msg", "Байршил авах зөвшөөрөл олгогдсонгүй.", "error"));
+  };
+  $("d_save").onclick = saveDisaster;
+  if (row) $("d_cancel").onclick = () => go("disList");
+}
+
+async function saveDisaster() {
+  const v = id => $(id).value.trim();
+  const org_id = isAdmin() ? Number(v("d_org")) : S.profile.org_id;
+  if (!org_id || !v("d_type") || !v("d_aimag") || !v("d_start")) return message("d_msg", "* тэмдэгтэй талбаруудыг бөглөнө үү.", "error");
+  if (v("d_end") && v("d_end") < v("d_start")) return message("d_msg", "Дууссан хугацаа эхэлснээс өмнө байж болохгүй.", "error");
+  const lat = v("d_lat") ? Number(v("d_lat")) : null, lng = v("d_lng") ? Number(v("d_lng")) : null;
+  if ((lat !== null && (lat < 41 || lat > 52.5)) || (lng !== null && (lng < 87 || lng > 120.5))) return message("d_msg", "GPS солбицол Монгол Улсын нутаг дэвсгэрт байх ёстой.", "error");
+  $("d_save").disabled = true; message("d_msg", "Хадгалж байна...");
+  try {
+    const newFiles = await uploadFiles($("d_files").files, "disasters");
+    const data = {
+      org_id, disaster_type: v("d_type"), title: v("d_title") || null, aimag: v("d_aimag"), soum: v("d_soum") || null, bag: v("d_bag") || null,
+      lat, lng, started_at: new Date(v("d_start")).toISOString(), ended_at: v("d_end") ? new Date(v("d_end")).toISOString() : null,
+      description: v("d_desc") || null, cause: v("d_cause") || null,
+      response_actions: Array.from(document.querySelectorAll("#disFormBox .checks input:checked")).map(c => c.value),
+      files: [...(DIS.editing?.files || []), ...newFiles]
+    };
+    ["deaths", "injured", "missing", "evacuated", "affected", "livestock_loss", "buildings_damaged", "economic_loss", "forces_people", "forces_vehicles"].forEach(k => data[k] = num($("d_" + k).value));
+    const q = DIS.editing ? S.sb.from("disasters").update(data).eq("id", DIS.editing.id) : S.sb.from("disasters").insert(data);
+    const { error } = await q; if (error) throw error;
+    message("d_msg", "Амжилттай хадгаллаа.", "success");
+    setTimeout(() => go("disList"), 600);
+  } catch (e) { message("d_msg", "Алдаа: " + safeError(e), "error"); } finally { $("d_save").disabled = false; }
+}
+
+async function loadDisasters() {
+  const box = $("disListBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters">
+      <div><label>Он</label><select id="df_year">${yearOptions(new Date().getFullYear())}</select></div>
+      ${seeAll() ? `<div><label>Аймаг</label><select id="df_aimag">${options(AIMAGS, "", "Бүгд")}</select></div>` : ""}
+      <div><label>Төрөл</label><select id="df_type">${options(LISTS.disasterTypes, "", "Бүгд")}</select></div>
+      <div><label>Төлөв</label><select id="df_status">${options(["Бүртгэгдсэн", "Баталгаажсан", "Буцаасан", "Хаагдсан"], "", "Бүгд")}</select></div>
+      <div><label>Хайх</label><input id="df_q" placeholder="Нэр, сум, тайлбар"></div>
+      <div class="f-btns"><button class="green" id="df_xlsx">Excel</button></div></div>
+      <div id="df_info" class="message"></div><div class="table-wrap" id="df_table"></div>`;
+    box.dataset.ready = 1;
+    ["df_year", "df_aimag", "df_type", "df_status"].forEach(id => $(id) && ($(id).onchange = () => id === "df_year" ? fetchDisasters() : renderDisasters()));
+    $("df_q").oninput = renderDisasters;
+    $("df_xlsx").onclick = () => exportExcel("gamshig_osol.xlsx", [{ name: "Гамшиг осол", rows: disasterRows(filteredDisasters()) }]);
+  }
+  await fetchDisasters();
+}
+async function fetchDisasters() {
+  message("df_info", "Ачаалж байна...");
+  const [a, b] = yearRange($("df_year").value);
+  const { data, error } = await S.sb.from("disasters").select("*").gte("started_at", a).lt("started_at", b).order("started_at", { ascending: false });
+  if (error) return message("df_info", "Алдаа: " + safeError(error), "error");
+  DIS.rows = data || []; renderDisasters();
+}
+function filteredDisasters() {
+  const ai = $("df_aimag")?.value || "", ty = $("df_type").value, st = $("df_status").value, q = $("df_q").value.trim().toLowerCase();
+  return DIS.rows.filter(d => (!ai || d.aimag === ai) && (!ty || d.disaster_type === ty) && (!st || d.status === st) &&
+    (!q || [d.title, d.soum, d.bag, d.description, d.disaster_type].join(" ").toLowerCase().includes(q)));
+}
+function disasterRows(list) {
+  return [["Огноо", "Төрөл", "Нэр", "Аймаг", "Сум", "Нас барсан", "Гэмтсэн", "Нүүлгэсэн", "Мал", "Барилга", "Хохирол ₮", "Байгууллага", "Төлөв"],
+    ...list.map(d => [dtstr(d.started_at), d.disaster_type, d.title || "", d.aimag, d.soum || "", num(d.deaths), num(d.injured), num(d.evacuated), num(d.livestock_loss), num(d.buildings_damaged), num(d.economic_loss), orgName(d.org_id), d.status])];
+}
+function renderDisasters() {
+  const list = filteredDisasters();
+  message("df_info", `Нийт ${list.length} бүртгэл.`, "success");
+  $("df_table").innerHTML = `<table><tr><th>Огноо</th><th>Төрөл</th><th>Байршил</th><th>Хохирол</th><th>Байгууллага</th><th>Төлөв</th><th>Үйлдэл</th></tr>
+    ${list.map(d => `<tr><td>${esc(dtstr(d.started_at))}</td><td><b>${esc(d.disaster_type)}</b>${d.title ? "<br><span class='muted'>" + esc(d.title) + "</span>" : ""}</td>
+      <td>${esc(d.aimag)}${d.soum ? " / " + esc(d.soum) : ""}</td><td>${esc(lossSummary(d))}</td><td>${esc(orgName(d.org_id))}</td><td>${badge(d.status)}</td>
+      <td class="acts"><button class="sm" data-dis-view="${d.id}">Дэлгэрэнгүй</button>${disActions(d)}</td></tr>`).join("") || '<tr><td colspan="7" class="muted">Бүртгэл алга.</td></tr>'}</table>`;
+}
+function disActions(d) {
+  let h = "";
+  if ((isOrg() && !["Баталгаажсан", "Хаагдсан"].includes(d.status)) || isAdmin()) h += `<button class="sm secondary" data-dis-edit="${d.id}">Засах</button>`;
+  if (isAdmin()) {
+    if (d.status !== "Баталгаажсан") h += `<button class="sm green" data-dis-st="${d.id}|Баталгаажсан">Баталгаажуулах</button>`;
+    if (d.status !== "Хаагдсан") h += `<button class="sm secondary" data-dis-st="${d.id}|Хаагдсан">Хаах</button>`;
+    if (d.status === "Бүртгэгдсэн") h += `<button class="sm warn" data-dis-st="${d.id}|Буцаасан">Буцаах</button>`;
+    h += `<button class="sm danger" data-dis-del="${d.id}">Устгах</button>`;
+  }
+  return h;
+}
+function disasterDetail(d) {
+  const row = (k, v) => `<tr><th>${k}</th><td>${v}</td></tr>`;
+  return `<table class="kv">
+    ${row("Төрөл", esc(d.disaster_type) + (d.title ? " — " + esc(d.title) : ""))}${row("Төлөв", badge(d.status) + (d.review_comment ? " <span class='muted'>" + esc(d.review_comment) + "</span>" : ""))}
+    ${row("Байршил", esc([d.aimag, d.soum, d.bag].filter(Boolean).join(", ")) + (d.lat ? ` <span class="muted">(${d.lat}, ${d.lng})</span>` : ""))}
+    ${row("Хугацаа", esc(dtstr(d.started_at)) + " — " + esc(dtstr(d.ended_at) || "үргэлжилж байна"))}
+    ${row("Тайлбар", esc(d.description || "—"))}${row("Шалтгаан", esc(d.cause || "—"))}
+    ${row("Хүний хохирол", `Нас барсан ${num(d.deaths)}, гэмтсэн ${num(d.injured)}, сураггүй ${num(d.missing)}, нүүлгэсэн ${fmt(d.evacuated)}, өртсөн ${fmt(d.affected)}`)}
+    ${row("Эд хөрөнгө", `Мал ${fmt(d.livestock_loss)}, барилга ${fmt(d.buildings_damaged)}, хохирол ${money(d.economic_loss)}`)}
+    ${row("Хариу арга хэмжээ", esc((d.response_actions || []).join(", ") || "—") + ` · ${num(d.forces_people)} хүн, ${num(d.forces_vehicles)} техник`)}
+    ${row("Бүртгэсэн", esc(orgName(d.org_id)) + " · " + esc(dtstr(d.created_at)))}${row("Файл", fileButtons(d.files))}</table>`;
+}
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-dis-view],[data-dis-edit],[data-dis-st],[data-dis-del]"); if (!t) return;
+  const find = id => DIS.rows.find(x => String(x.id) === String(id));
+  if (t.dataset.disView) { const d = find(t.dataset.disView); openModal("Гамшиг, ослын дэлгэрэнгүй", disasterDetail(d), true); }
+  if (t.dataset.disEdit) { go("disForm", { noLoad: true }); openDisasterForm(find(t.dataset.disEdit)); }
+  if (t.dataset.disSt) {
+    const [id, st] = t.dataset.disSt.split("|"); let comment = null;
+    if (st === "Буцаасан") { comment = prompt("Буцаах шалтгаан:"); if (!comment) return; }
+    const { error } = await S.sb.from("disasters").update({ status: st, review_comment: comment, reviewed_by: S.user.id, reviewed_at: new Date().toISOString() }).eq("id", id);
+    if (error) return alert("Алдаа: " + safeError(error)); fetchDisasters();
+  }
+  if (t.dataset.disDel) {
+    if (!confirm("Энэ бүртгэлийг устгах уу? Буцаах боломжгүй.")) return;
+    const { error } = await S.sb.from("disasters").delete().eq("id", t.dataset.disDel);
+    if (error) return alert("Алдаа: " + safeError(error)); fetchDisasters();
+  }
+});
+
+</script>
+<script>
+/* ===== js/inspections.js ===== */
+"use strict";
+/* =====================================================================
+   УЛСЫН ХЯНАЛТ ШАЛГАЛТ, ЗӨРЧИЛ, ШААРДЛАГА, БИЕЛЭЛТ
+   ===================================================================== */
+let INS = { rows: [], viols: {}, editing: null, editViols: [] };
+let VIO = { rows: [] };
+
+/* ---------- Шалгалт бүртгэх ---------- */
+function violRowHtml(v, i) {
+  return `<div class="viol-row" data-i="${i}">
+    <div class="viol-head"><b>Зөрчил ${i + 1}</b><button type="button" class="sm danger" data-viol-del="${i}">Хасах</button></div>
+    <label>Зөрчлийн тайлбар *</label><textarea class="v_desc">${esc(v.description)}</textarea>
+    <div class="grid g3">
+      <div><label>Зөрчсөн хууль, заалт</label><input class="v_legal" value="${esc(v.legal_basis)}"></div>
+      <div><label>Шаардлагын төрөл</label><select class="v_rtype">${options(LISTS.requirementTypes, v.requirement_type || LISTS.requirementTypes[0])}</select></div>
+      <div><label>Шаардлагын дугаар</label><input class="v_rnum" value="${esc(v.requirement_number)}"></div>
+      <div><label>Арилгах хугацаа</label><input type="date" class="v_deadline" value="${esc(dstr(v.deadline))}"></div>
+      <div><label>Хариуцлага</label><select class="v_pen">${options(LISTS.penaltyTypes, v.penalty_type || "Байхгүй")}</select></div>
+      <div><label>Торгуулийн дүн (₮)</label><input type="number" min="0" step="1000" class="v_fine" value="${num(v.fine_amount)}"></div>
+    </div></div>`;
+}
+function collectViolsFromDom() {
+  return Array.from(document.querySelectorAll("#i_viols .viol-row")).map(r => {
+    const i = Number(r.dataset.i), old = INS.editViols[i] || {};
+    return { id: old.id, description: r.querySelector(".v_desc").value.trim(), legal_basis: r.querySelector(".v_legal").value.trim() || null,
+      requirement_type: r.querySelector(".v_rtype").value, requirement_number: r.querySelector(".v_rnum").value.trim() || null,
+      deadline: r.querySelector(".v_deadline").value || null, penalty_type: r.querySelector(".v_pen").value, fine_amount: num(r.querySelector(".v_fine").value) };
+  });
+}
+function renderViolEditor() {
+  $("i_viols").innerHTML = INS.editViols.map(violRowHtml).join("") || '<p class="muted">Зөрчил нэмээгүй байна.</p>';
+}
+function toggleViolSection() { $("i_violSec").classList.toggle("hidden", $("i_result").value !== "Зөрчилтэй"); }
+
+async function openInspectionForm(row, viols) {
+  INS.editing = row || null; INS.editViols = (viols || []).map(v => ({ ...v }));
+  const d = row || { inspection_date: today(), aimag: S.orgById[S.profile.org_id]?.aimag || "", checklist: [] };
+  const ans = q => (d.checklist || []).find(c => c.q === q)?.a || "";
+  $("inspFormBox").innerHTML = `
+    <h2>${row ? "Хяналт шалгалт засах" : "Хяналт шалгалт бүртгэх"}</h2>
+    ${isAdmin() ? `<label>Шалгалт хийсэн байгууллага *</label><select id="i_org">${orgOptions(d.org_id, "— сонгох —")}</select>` : ""}
+    <div class="grid g3">
+      <div><label>Шалгалтын огноо *</label><input type="date" id="i_date" value="${esc(dstr(d.inspection_date))}"></div>
+      <div><label>Шалгалтын төрөл *</label><select id="i_type">${options(LISTS.inspectionTypes, d.inspection_type, "— сонгох —")}</select></div>
+      <div><label>Хяналтын чиглэл *</label><select id="i_topic">${options(LISTS.topics, d.topic, "— сонгох —")}</select></div>
+    </div>
+    <div class="grid g3">
+      <div><label>Удирдамжийн дугаар</label><input id="i_guide" value="${esc(d.guideline_no)}"></div>
+      <div><label>Улсын байцаагч(ид)</label><input id="i_insp" value="${esc(d.inspectors)}" placeholder="Нэр, дугаар"></div>
+      <div><label>Актын дугаар</label><input id="i_act" value="${esc(d.act_number)}"></div>
+    </div>
+    <h3>Шалгагдсан байгууллага, объект</h3>
+    <div class="grid g3">
+      <div><label>Нэр *</label><input id="i_target" value="${esc(d.target_name)}"></div>
+      <div><label>Төрөл</label><select id="i_ttype">${options(LISTS.targetTypes, d.target_type, "— сонгох —")}</select></div>
+      <div><label>Регистрийн дугаар</label><input id="i_reg" value="${esc(d.target_register)}"></div>
+      <div><label>Аймаг, нийслэл</label><select id="i_aimag">${options(AIMAGS, d.aimag, "— сонгох —")}</select></div>
+      <div><label>Сум, дүүрэг</label><input id="i_soum" value="${esc(d.soum)}"></div>
+      <div><label>Хаяг</label><input id="i_addr" value="${esc(d.address)}"></div>
+    </div>
+    <h3>Шалгах хуудас</h3>
+    <table class="checklist"><tr><th>Шалгуур</th><th style="width:170px">Хариу</th></tr>
+      ${LISTS.checklist.map((q, i) => `<tr><td>${esc(q)}</td><td><select class="i_ck" data-q="${i}">${options(["Тийм", "Үгүй", "Хамааралгүй"], ans(q), "—")}</select></td></tr>`).join("")}</table>
+    <div class="grid">
+      <div><label>Шалгалтын үр дүн *</label><select id="i_result">${options(["Зөрчилгүй", "Зөрчилтэй"], d.result, "— сонгох —")}</select></div>
+      <div><label>Удирдамж, акт, зураг (олон файл)</label><input id="i_files" type="file" multiple accept="image/*,.pdf,.doc,.docx"></div>
+    </div>
+    ${row && row.files?.length ? `<p class="muted">Одоо байгаа файл: ${fileButtons(row.files)}</p>` : ""}
+    <div id="i_violSec" class="viol-sec hidden"><h3>Илэрсэн зөрчил, улсын байцаагчийн шаардлага</h3><div id="i_viols"></div>
+      <button type="button" class="secondary" id="i_addViol">+ Зөрчил нэмэх</button></div>
+    <label>Дүгнэлт</label><textarea id="i_concl">${esc(d.conclusion)}</textarea>
+    <div class="actions"><button id="i_save">${row ? "Хадгалах" : "Бүртгэх"}</button>${row ? '<button class="secondary" id="i_cancel">Болих</button>' : ""}</div>
+    <div id="i_msg" class="message"></div>`;
+  renderViolEditor(); toggleViolSection();
+  $("i_result").onchange = () => { toggleViolSection(); if ($("i_result").value === "Зөрчилтэй" && !INS.editViols.length) { INS.editViols.push({}); renderViolEditor(); } };
+  document.querySelectorAll(".i_ck").forEach(s => s.onchange = () => {
+    if ([...document.querySelectorAll(".i_ck")].some(x => x.value === "Үгүй") && !$("i_result").value) { $("i_result").value = "Зөрчилтэй"; $("i_result").onchange(); }
+  });
+  $("i_addViol").onclick = () => { INS.editViols = collectViolsFromDom(); INS.editViols.push({}); renderViolEditor(); };
+  $("i_viols").onclick = e => { const b = e.target.closest("[data-viol-del]"); if (!b) return; INS.editViols = collectViolsFromDom(); INS.editViols.splice(Number(b.dataset.violDel), 1); renderViolEditor(); };
+  $("i_save").onclick = saveInspection;
+  if (row) $("i_cancel").onclick = () => go("inspList");
+}
+
+async function saveInspection() {
+  const v = id => $(id).value.trim();
+  const org_id = isAdmin() ? Number(v("i_org")) : S.profile.org_id;
+  if (!org_id || !v("i_date") || !v("i_type") || !v("i_topic") || !v("i_target") || !v("i_result")) return message("i_msg", "* тэмдэгтэй талбаруудыг бөглөнө үү.", "error");
+  const viols = v("i_result") === "Зөрчилтэй" ? collectViolsFromDom() : [];
+  if (v("i_result") === "Зөрчилтэй" && (!viols.length || viols.some(x => !x.description))) return message("i_msg", "Зөрчил бүрийн тайлбарыг бөглөнө үү.", "error");
+  $("i_save").disabled = true; message("i_msg", "Хадгалж байна...");
+  try {
+    const newFiles = await uploadFiles($("i_files").files, "inspections");
+    const data = {
+      org_id, inspection_date: v("i_date"), inspection_type: v("i_type"), topic: v("i_topic"), guideline_no: v("i_guide") || null,
+      inspectors: v("i_insp") || null, act_number: v("i_act") || null, target_name: v("i_target"), target_type: v("i_ttype") || null,
+      target_register: v("i_reg") || null, aimag: v("i_aimag") || null, soum: v("i_soum") || null, address: v("i_addr") || null,
+      checklist: LISTS.checklist.map((q, i) => ({ q, a: document.querySelector(`.i_ck[data-q="${i}"]`).value })).filter(c => c.a),
+      result: v("i_result"), conclusion: v("i_concl") || null, files: [...(INS.editing?.files || []), ...newFiles]
+    };
+    let id = INS.editing?.id;
+    if (id) { const { error } = await S.sb.from("inspections").update(data).eq("id", id); if (error) throw error; }
+    else { const { data: ins, error } = await S.sb.from("inspections").insert(data).select("id").single(); if (error) throw error; id = ins.id; }
+    // зөрчлүүд: устгагдсан → устгах, байгаа → шинэчлэх, шинэ → нэмэх
+    const keepIds = viols.filter(x => x.id).map(x => x.id);
+    const removed = (INS.editing ? (INS.viols[id] || []) : []).filter(x => !keepIds.includes(x.id));
+    for (const r of removed) { const { error } = await S.sb.from("violations").delete().eq("id", r.id); if (error) throw error; }
+    for (const x of viols) {
+      const body = { inspection_id: id, org_id, description: x.description, legal_basis: x.legal_basis, requirement_type: x.requirement_type,
+        requirement_number: x.requirement_number, deadline: x.deadline, penalty_type: x.penalty_type, fine_amount: x.fine_amount };
+      const { error } = x.id ? await S.sb.from("violations").update(body).eq("id", x.id) : await S.sb.from("violations").insert(body);
+      if (error) throw error;
+    }
+    message("i_msg", "Амжилттай хадгаллаа.", "success");
+    setTimeout(() => go("inspList"), 600);
+  } catch (e) { message("i_msg", "Алдаа: " + safeError(e), "error"); } finally { $("i_save").disabled = false; }
+}
+
+/* ---------- Шалгалтын жагсаалт ---------- */
+async function loadInspections() {
+  const box = $("inspListBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters">
+      <div><label>Он</label><select id="if_year">${yearOptions(new Date().getFullYear())}</select></div>
+      ${seeAll() ? `<div><label>Байгууллага</label><select id="if_org">${orgOptions("", "Бүгд")}</select></div>` : ""}
+      <div><label>Чиглэл</label><select id="if_topic">${options(LISTS.topics, "", "Бүгд")}</select></div>
+      <div><label>Үр дүн</label><select id="if_result">${options(["Зөрчилтэй", "Зөрчилгүй"], "", "Бүгд")}</select></div>
+      <div><label>Төлөв</label><select id="if_status">${options(["Бүртгэгдсэн", "Баталгаажсан", "Буцаасан"], "", "Бүгд")}</select></div>
+      <div><label>Хайх</label><input id="if_q" placeholder="Объект, регистр, байцаагч"></div>
+      <div class="f-btns"><button class="green" id="if_xlsx">Excel</button></div></div>
+      <div id="if_info" class="message"></div><div class="table-wrap" id="if_table"></div>`;
+    box.dataset.ready = 1;
+    ["if_org", "if_topic", "if_result", "if_status"].forEach(id => $(id) && ($(id).onchange = renderInspections));
+    $("if_year").onchange = fetchInspections; $("if_q").oninput = renderInspections;
+    $("if_xlsx").onclick = () => {
+      const list = filteredInspections();
+      exportExcel("hyanalt_shalgalt.xlsx", [
+        { name: "Шалгалт", rows: [["Огноо", "Байгууллага", "Объект", "Төрөл", "Чиглэл", "Үр дүн", "Зөрчил", "Акт", "Төлөв"], ...list.map(i => [i.inspection_date, orgName(i.org_id), i.target_name, i.inspection_type, i.topic, i.result, (INS.viols[i.id] || []).length, i.act_number || "", i.status])] },
+        { name: "Зөрчил", rows: [["Объект", "Зөрчил", "Хууль, заалт", "Шаардлага", "Хугацаа", "Хариуцлага", "Торгууль ₮", "Төлөв"], ...list.flatMap(i => (INS.viols[i.id] || []).map(x => [i.target_name, x.description, x.legal_basis || "", x.requirement_type, x.deadline || "", x.penalty_type, num(x.fine_amount), violStatus(x)]))] }
+      ]);
+    };
+  }
+  await fetchInspections();
+}
+async function fetchInspections() {
+  message("if_info", "Ачаалж байна...");
+  const [a, b] = yearRange($("if_year").value);
+  const ins = await S.sb.from("inspections").select("*").gte("inspection_date", a).lt("inspection_date", b).order("inspection_date", { ascending: false });
+  if (ins.error) return message("if_info", "Алдаа: " + safeError(ins.error), "error");
+  INS.rows = ins.data || []; INS.viols = {};
+  const ids = INS.rows.map(r => r.id);
+  if (ids.length) {
+    const vi = await S.sb.from("violations").select("*").in("inspection_id", ids);
+    if (vi.error) return message("if_info", "Алдаа: " + safeError(vi.error), "error");
+    (vi.data || []).forEach(v => (INS.viols[v.inspection_id] = INS.viols[v.inspection_id] || []).push(v));
+  }
+  renderInspections();
+}
+function filteredInspections() {
+  const og = $("if_org")?.value || "", tp = $("if_topic").value, rs = $("if_result").value, st = $("if_status").value, q = $("if_q").value.trim().toLowerCase();
+  return INS.rows.filter(i => (!og || String(i.org_id) === og) && (!tp || i.topic === tp) && (!rs || i.result === rs) && (!st || i.status === st) &&
+    (!q || [i.target_name, i.target_register, i.inspectors, i.soum].join(" ").toLowerCase().includes(q)));
+}
+function renderInspections() {
+  const list = filteredInspections();
+  message("if_info", `Нийт ${list.length} шалгалт.`, "success");
+  $("if_table").innerHTML = `<table><tr><th>Огноо</th><th>Объект</th><th>Төрөл, чиглэл</th><th>Үр дүн</th><th>Зөрчил</th><th>Байгууллага</th><th>Төлөв</th><th>Үйлдэл</th></tr>
+    ${list.map(i => { const vs = INS.viols[i.id] || [], fixed = vs.filter(x => x.status === "Арилгасан").length;
+      return `<tr><td>${esc(i.inspection_date)}</td><td><b>${esc(i.target_name)}</b><br><span class="muted">${esc(i.target_type || "")}</span></td>
+      <td>${esc(i.inspection_type)}<br><span class="muted">${esc(i.topic)}</span></td><td>${badge(i.result)}</td>
+      <td>${vs.length ? `${vs.length} <span class="muted">(арилгасан ${fixed})</span>` : "—"}</td><td>${esc(orgName(i.org_id))}</td><td>${badge(i.status)}</td>
+      <td class="acts"><button class="sm" data-ins-view="${i.id}">Дэлгэрэнгүй</button>${insActions(i)}</td></tr>`; }).join("") || '<tr><td colspan="8" class="muted">Бүртгэл алга.</td></tr>'}</table>`;
+}
+function insActions(i) {
+  let h = "";
+  if ((isOrg() && i.status !== "Баталгаажсан") || isAdmin()) h += `<button class="sm secondary" data-ins-edit="${i.id}">Засах</button>`;
+  if (isAdmin()) {
+    if (i.status !== "Баталгаажсан") h += `<button class="sm green" data-ins-st="${i.id}|Баталгаажсан">Баталгаажуулах</button>`;
+    if (i.status === "Бүртгэгдсэн") h += `<button class="sm warn" data-ins-st="${i.id}|Буцаасан">Буцаах</button>`;
+    h += `<button class="sm danger" data-ins-del="${i.id}">Устгах</button>`;
+  }
+  return h;
+}
+function inspectionDetail(i) {
+  const row = (k, v) => `<tr><th>${k}</th><td>${v}</td></tr>`, vs = INS.viols[i.id] || [];
+  return `<table class="kv">
+    ${row("Объект", `<b>${esc(i.target_name)}</b> ${esc(i.target_type || "")} ${i.target_register ? "· РД " + esc(i.target_register) : ""}`)}
+    ${row("Байршил", esc([i.aimag, i.soum, i.address].filter(Boolean).join(", ") || "—"))}
+    ${row("Шалгалт", `${esc(i.inspection_date)} · ${esc(i.inspection_type)} · ${esc(i.topic)}`)}
+    ${row("Удирдамж / акт", `${esc(i.guideline_no || "—")} / ${esc(i.act_number || "—")}`)}${row("Улсын байцаагч", esc(i.inspectors || "—"))}
+    ${row("Үр дүн", badge(i.result))}${row("Дүгнэлт", esc(i.conclusion || "—"))}
+    ${row("Төлөв", badge(i.status) + (i.review_comment ? " <span class='muted'>" + esc(i.review_comment) + "</span>" : ""))}
+    ${row("Байгууллага", esc(orgName(i.org_id)))}${row("Файл", fileButtons(i.files))}</table>
+    ${(i.checklist || []).length ? `<h3>Шалгах хуудас</h3><table><tr><th>Шалгуур</th><th>Хариу</th></tr>${i.checklist.map(c => `<tr><td>${esc(c.q)}</td><td>${c.a === "Үгүй" ? "<b class='red'>Үгүй</b>" : esc(c.a)}</td></tr>`).join("")}</table>` : ""}
+    ${vs.length ? `<h3>Зөрчил, шаардлага</h3><table><tr><th>Зөрчил</th><th>Шаардлага</th><th>Хугацаа</th><th>Хариуцлага</th><th>Төлөв</th></tr>${vs.map(x => `<tr><td>${esc(x.description)}<br><span class="muted">${esc(x.legal_basis || "")}</span></td><td>${esc(x.requirement_type)} ${esc(x.requirement_number || "")}</td><td>${esc(x.deadline || "—")}</td><td>${esc(x.penalty_type)}${num(x.fine_amount) ? "<br>" + money(x.fine_amount) + (x.fine_paid ? " (төлсөн)" : "") : ""}</td><td>${badge(violStatus(x))}</td></tr>`).join("")}</table>` : ""}`;
+}
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-ins-view],[data-ins-edit],[data-ins-st],[data-ins-del]"); if (!t) return;
+  const find = id => INS.rows.find(x => String(x.id) === String(id));
+  if (t.dataset.insView) openModal("Хяналт шалгалтын дэлгэрэнгүй", inspectionDetail(find(t.dataset.insView)), true);
+  if (t.dataset.insEdit) { const i = find(t.dataset.insEdit); go("inspForm", { noLoad: true }); openInspectionForm(i, INS.viols[i.id]); }
+  if (t.dataset.insSt) {
+    const [id, st] = t.dataset.insSt.split("|"); let comment = null;
+    if (st === "Буцаасан") { comment = prompt("Буцаах шалтгаан:"); if (!comment) return; }
+    const { error } = await S.sb.from("inspections").update({ status: st, review_comment: comment, reviewed_by: S.user.id, reviewed_at: new Date().toISOString() }).eq("id", id);
+    if (error) return alert("Алдаа: " + safeError(error)); fetchInspections();
+  }
+  if (t.dataset.insDel) {
+    if (!confirm("Энэ шалгалт болон түүний зөрчлүүдийг устгах уу? Буцаах боломжгүй.")) return;
+    const { error } = await S.sb.from("inspections").delete().eq("id", t.dataset.insDel);
+    if (error) return alert("Алдаа: " + safeError(error)); fetchInspections();
+  }
+});
+
+/* ---------- Зөрчил, шаардлагын биелэлт ---------- */
+async function loadViolations() {
+  const box = $("violBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters">
+      <div><label>Он (шалгалтын)</label><select id="vf_year">${yearOptions(new Date().getFullYear())}</select></div>
+      ${seeAll() ? `<div><label>Байгууллага</label><select id="vf_org">${orgOptions("", "Бүгд")}</select></div>` : ""}
+      <div><label>Төлөв</label><select id="vf_status">${options(["Биелээгүй", "Хэрэгжиж байна", "Арилгасан", "Хугацаа хэтэрсэн"], "", "Бүгд")}</select></div>
+      <div><label>Хайх</label><input id="vf_q" placeholder="Объект, зөрчил"></div>
+      <div class="f-btns"><button class="green" id="vf_xlsx">Excel</button></div></div>
+      <div id="vf_sum" class="mini-kpis"></div><div id="vf_info" class="message"></div><div class="table-wrap" id="vf_table"></div>`;
+    box.dataset.ready = 1;
+    ["vf_org", "vf_status"].forEach(id => $(id) && ($(id).onchange = renderViolations));
+    $("vf_year").onchange = fetchViolations; $("vf_q").oninput = renderViolations;
+    $("vf_xlsx").onclick = () => exportExcel("zorchil_biyelelt.xlsx", [{ name: "Зөрчил", rows: [["Байгууллага", "Объект", "Шалгалтын огноо", "Зөрчил", "Шаардлага", "Хугацаа", "Хариуцлага", "Торгууль ₮", "Төлсөн", "Төлөв", "Арилгасан огноо"],
+      ...filteredViolations().map(x => [orgName(x.org_id), x.inspections?.target_name || "", x.inspections?.inspection_date || "", x.description, `${x.requirement_type} ${x.requirement_number || ""}`, x.deadline || "", x.penalty_type, num(x.fine_amount), x.fine_paid ? "Тийм" : "Үгүй", violStatus(x), x.fixed_at || ""])] }]);
+  }
+  await fetchViolations();
+}
+async function fetchViolations() {
+  message("vf_info", "Ачаалж байна...");
+  const [a, b] = yearRange($("vf_year").value);
+  const { data, error } = await S.sb.from("violations").select("*, inspections!inner(target_name, inspection_date, status)")
+    .gte("inspections.inspection_date", a).lt("inspections.inspection_date", b).order("deadline", { ascending: true });
+  if (error) return message("vf_info", "Алдаа: " + safeError(error), "error");
+  VIO.rows = data || []; renderViolations();
+}
+function filteredViolations() {
+  const og = $("vf_org")?.value || "", st = $("vf_status").value, q = $("vf_q").value.trim().toLowerCase();
+  return VIO.rows.filter(x => (!og || String(x.org_id) === og) && (!st || violStatus(x) === st) &&
+    (!q || [x.description, x.inspections?.target_name, x.requirement_number].join(" ").toLowerCase().includes(q)));
+}
+function daysLeft(x) {
+  if (!x.deadline || x.status === "Арилгасан") return "";
+  const d = Math.round((Date.parse(x.deadline) - Date.parse(today())) / 864e5);
+  return d < 0 ? `<span class="red">${-d} хоног хэтэрсэн</span>` : `<span class="muted">${d} хоног үлдсэн</span>`;
+}
+function renderViolations() {
+  const list = filteredViolations();
+  const c = s => list.filter(x => violStatus(x) === s).length, fine = list.reduce((a, x) => a + num(x.fine_amount), 0);
+  $("vf_sum").innerHTML = [["Нийт зөрчил", list.length], ["Арилгасан", c("Арилгасан")], ["Хэрэгжиж байна", c("Хэрэгжиж байна")], ["Биелээгүй", c("Биелээгүй")], ["Хугацаа хэтэрсэн", c("Хугацаа хэтэрсэн")], ["Торгууль", money(fine)]]
+    .map(([k, v]) => `<div class="mk"><span>${k}</span><b>${typeof v === "number" ? fmt(v) : v}</b></div>`).join("");
+  message("vf_info", "");
+  $("vf_table").innerHTML = `<table><tr><th>Объект</th><th>Зөрчил</th><th>Шаардлага</th><th>Хугацаа</th><th>Хариуцлага</th><th>Төлөв</th><th>Нотлох баримт</th><th>Үйлдэл</th></tr>
+    ${list.map(x => `<tr class="${isOverdue(x) ? "row-late" : ""}"><td><b>${esc(x.inspections?.target_name || "")}</b><br><span class="muted">${esc(orgName(x.org_id))}</span></td>
+      <td>${esc(x.description)}</td><td>${esc(x.requirement_type)}<br><span class="muted">${esc(x.requirement_number || "")}</span></td>
+      <td>${esc(x.deadline || "—")}<br>${daysLeft(x)}</td><td>${esc(x.penalty_type)}${num(x.fine_amount) ? "<br>" + money(x.fine_amount) + (x.fine_paid ? " ✓" : "") : ""}</td>
+      <td>${badge(violStatus(x))}${x.fixed_at ? "<br><span class='muted'>" + esc(x.fixed_at) + "</span>" : ""}</td><td>${fileButtons(x.evidence_files)}</td>
+      <td>${role() === "viewer" ? "" : `<button class="sm" data-vio-fu="${x.id}">Биелэлт оруулах</button>`}</td></tr>`).join("") || '<tr><td colspan="8" class="muted">Зөрчил алга.</td></tr>'}</table>`;
+}
+function openFollowup(x) {
+  openModal("Зөрчил арилгалтын хяналт", `
+    <p><b>${esc(x.inspections?.target_name || "")}</b>: ${esc(x.description)}</p>
+    <div class="grid"><div><label>Төлөв</label><select id="fu_status">${options(["Биелээгүй", "Хэрэгжиж байна", "Арилгасан"], x.status)}</select></div>
+      <div><label>Арилгасан огноо</label><input type="date" id="fu_date" value="${esc(x.fixed_at || "")}"></div></div>
+    ${num(x.fine_amount) ? `<label class="chk"><input type="checkbox" id="fu_paid"${x.fine_paid ? " checked" : ""}> Торгууль (${money(x.fine_amount)}) төлөгдсөн</label>` : ""}
+    <label>Тэмдэглэл (гүйцэтгэлийн шалгалтын дүгнэлт)</label><textarea id="fu_note">${esc(x.followup_note || "")}</textarea>
+    <label>Зөрчил арилгасан нотлох баримт (зураг, баримт)</label><input type="file" id="fu_files" multiple accept="image/*,.pdf,.doc,.docx">
+    ${x.evidence_files?.length ? `<p class="muted">Одоо байгаа: ${fileButtons(x.evidence_files)}</p>` : ""}
+    <div class="actions"><button id="fu_save">Хадгалах</button><button class="secondary" onclick="closeModal()">Болих</button></div><div id="fu_msg" class="message"></div>`);
+  $("fu_status").onchange = () => { if ($("fu_status").value === "Арилгасан" && !$("fu_date").value) $("fu_date").value = today(); };
+  $("fu_save").onclick = async () => {
+    if ($("fu_status").value === "Арилгасан" && !$("fu_date").value) return message("fu_msg", "Арилгасан огноог оруулна уу.", "error");
+    $("fu_save").disabled = true; message("fu_msg", "Хадгалж байна...");
+    try {
+      const nf = await uploadFiles($("fu_files").files, "evidence");
+      const body = { status: $("fu_status").value, fixed_at: $("fu_date").value || null, followup_note: $("fu_note").value.trim() || null,
+        evidence_files: [...(x.evidence_files || []), ...nf] };
+      if ($("fu_paid")) body.fine_paid = $("fu_paid").checked;
+      const { error } = await S.sb.from("violations").update(body).eq("id", x.id); if (error) throw error;
+      closeModal(); fetchViolations();
+    } catch (e) { message("fu_msg", "Алдаа: " + safeError(e), "error"); $("fu_save").disabled = false; }
+  };
+}
+document.addEventListener("click", e => { const t = e.target.closest("[data-vio-fu]"); if (t) openFollowup(VIO.rows.find(x => String(x.id) === t.dataset.vioFu)); });
+
+</script>
+<script>
+/* ===== js/dashboard.js ===== */
+"use strict";
+/* =====================================================================
+   НЭГДСЭН DASHBOARD, ТАЙЛАН СТАТИСТИК, ТӨЛӨВЛӨГӨӨ, ХЭРЭГЛЭГЧ
+   ===================================================================== */
+let DB = { dis: [], ins: [], vio: [], plans: [], map: null, layer: null };
+const TYPE_COLORS = ["#d64545", "#e8892b", "#c9a227", "#2f8f5b", "#2a7fb8", "#6a5acd", "#b0457a", "#3aa6a0", "#7a8b99", "#8c6d46", "#4b6cb7", "#a33c3c", "#5f6b7a"];
+const typeColor = t => TYPE_COLORS[Math.max(0, LISTS.disasterTypes.indexOf(t)) % TYPE_COLORS.length];
+
+function periodRange(y, p) {
+  if (p === "all") return yearRange(y);
+  if (p.startsWith("q")) { const q = Number(p[1]), m = (q - 1) * 3 + 1; const e = q === 4 ? `${Number(y) + 1}-01-01` : `${y}-${String(m + 3).padStart(2, "0")}-01`; return [`${y}-${String(m).padStart(2, "0")}-01`, e]; }
+  if (p.startsWith("h")) return p === "h1" ? [`${y}-01-01`, `${y}-07-01`] : [`${y}-07-01`, `${Number(y) + 1}-01-01`];
+  return yearRange(y);
+}
+const periodOptions = `<option value="all">Бүтэн жил</option><option value="h1">I хагас жил</option><option value="h2">II хагас жил</option><option value="q1">I улирал</option><option value="q2">II улирал</option><option value="q3">III улирал</option><option value="q4">IV улирал</option>`;
+
+async function fetchAll(y, p) {
+  const [a, b] = periodRange(y, p);
+  const [d, i, pl] = await Promise.all([
+    S.sb.from("disasters").select("*").gte("started_at", a).lt("started_at", b).order("started_at", { ascending: false }),
+    S.sb.from("inspections").select("*").gte("inspection_date", a).lt("inspection_date", b),
+    S.sb.from("inspection_plans").select("*").eq("year", Number(y))
+  ]);
+  for (const r of [d, i, pl]) if (r.error) throw r.error;
+  const ids = (i.data || []).map(x => x.id);
+  let v = { data: [] };
+  if (ids.length) { v = await S.sb.from("violations").select("*").in("inspection_id", ids); if (v.error) throw v.error; }
+  DB.dis = d.data || []; DB.ins = i.data || []; DB.vio = v.data || []; DB.plans = pl.data || [];
+}
+
+/* ---------- Dashboard ---------- */
+async function loadDashboard() {
+  const box = $("dashBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters">
+      <div><label>Он</label><select id="db_year">${yearOptions(new Date().getFullYear())}</select></div>
+      <div><label>Хугацаа</label><select id="db_period">${periodOptions}</select></div>
+      <div class="f-btns"><button class="secondary" id="db_refresh">Шинэчлэх</button></div><div id="db_msg" class="message"></div></div>
+      <div class="kpis" id="db_kpis"></div>
+      <div class="dash-row"><div class="card map-card"><div class="card-h">Монгол Улсын газрын зураг — гамшиг, осол</div><div id="db_map"></div><div class="legend" id="db_legend"></div></div>
+        <div class="card"><div class="card-h">Гамшгийн төрөл тус бүрийн тоо</div><div id="db_types"></div></div></div>
+      <div class="dash-row"><div class="card" id="db_rankCard"><div class="card-h">Аймаг, байгууллагын эрэмбэ — хяналт шалгалтын гүйцэтгэл</div><div id="db_rank"></div></div>
+        <div class="card"><div class="card-h">Сүүлийн гамшиг, осол</div><div id="db_latest" class="latest"></div></div></div>`;
+    box.dataset.ready = 1;
+    $("db_year").onchange = $("db_period").onchange = $("db_refresh").onclick = loadDashboard;
+  }
+  message("db_msg", "Ачаалж байна...");
+  try { await fetchAll($("db_year").value, $("db_period").value); } catch (e) { return message("db_msg", "Алдаа: " + safeError(e), "error"); }
+  message("db_msg", "");
+  renderKpis(); renderTypes(); renderMap(); renderRank(); renderLatest();
+}
+function renderKpis() {
+  const d = DB.dis, v = DB.vio, ym = today().slice(0, 7);
+  const sum = k => d.reduce((a, x) => a + num(x[k]), 0);
+  const thisMonth = d.filter(x => String(x.started_at).slice(0, 7) === ym).length;
+  const fixed = v.filter(x => x.status === "Арилгасан").length, late = v.filter(isOverdue).length;
+  const k = [
+    ["warn", "Нийт гамшиг, осол", fmt(d.length), `энэ сард ${thisMonth}`, "disList"],
+    ["red", "Амь нас, эрүүл мэнд", `${fmt(sum("deaths"))} / ${fmt(sum("injured"))}`, "нас барсан / гэмтсэн", "disList"],
+    ["amber", "Материаллаг хохирол", moneyShort(sum("economic_loss")), `мал ${fmt(sum("livestock_loss"))}, барилга ${fmt(sum("buildings_damaged"))}`, "stats"],
+    ["blue", "Хяналт шалгалт", fmt(DB.ins.length), `зөрчилтэй ${DB.ins.filter(x => x.result === "Зөрчилтэй").length}`, "inspList"],
+    ["purple", "Илэрсэн зөрчил", fmt(v.length), `торгууль ${moneyShort(v.reduce((a, x) => a + num(x.fine_amount), 0))}`, "viol"],
+    ["green", "Арилгасан зөрчил", fmt(fixed), v.length ? `${Math.round(fixed / v.length * 100)}% биелэлт` : "—", "viol"],
+    ["crit", "Хугацаа хэтэрсэн шаардлага", fmt(late), late ? "яаралтай хянах" : "хэтэрсэн шаардлага алга", "viol"]
+  ];
+  $("db_kpis").innerHTML = k.map(([c, t, val, sub, pg]) => `<div class="kpi k-${c}" data-go="${pg}"><div class="kpi-t">${t}</div><div class="kpi-v">${val}</div><div class="kpi-s">${sub}</div></div>`).join("");
+}
+function hbars(items, colorFn) {
+  const max = Math.max(1, ...items.map(x => x[1]));
+  return items.length ? items.map(([name, val, extra]) => `<div class="hb"><span class="hb-l">${esc(name)}</span><span class="hb-t"><span class="hb-f" style="width:${val / max * 100}%;background:${colorFn ? colorFn(name) : "#2f6db5"}"></span></span><b class="hb-v">${fmt(val)}${extra ? `<small> ${extra}</small>` : ""}</b></div>`).join("") : '<p class="muted">Мэдээлэл алга.</p>';
+}
+function renderTypes() {
+  const c = {}; DB.dis.forEach(x => c[x.disaster_type] = (c[x.disaster_type] || 0) + 1);
+  $("db_types").innerHTML = hbars(Object.entries(c).sort((a, b) => b[1] - a[1]), typeColor);
+}
+function renderMap() {
+  const el = $("db_map");
+  if (!window.L) { el.innerHTML = '<p class="muted pad">Газрын зургийн сан ачаалагдсангүй. Интернэт холболтоо шалгана уу.</p>'; return; }
+  if (!DB.map) {
+    DB.map = L.map(el, { scrollWheelZoom: false }).setView([46.9, 103.8], 5);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(DB.map);
+  }
+  if (DB.layer) DB.layer.remove();
+  DB.layer = L.layerGroup().addTo(DB.map);
+  const byAimag = {}; DB.dis.forEach(x => byAimag[x.aimag] = (byAimag[x.aimag] || 0) + 1);
+  const max = Math.max(1, ...Object.values(byAimag));
+  Object.entries(byAimag).forEach(([a, n]) => { const c = AIMAG_CENTERS[a]; if (!c) return;
+    L.circleMarker(c, { radius: 10 + 22 * n / max, color: "#b42318", weight: 1, fillColor: "#e04f39", fillOpacity: .28 })
+      .bindPopup(`<b>${esc(a)}</b><br>Гамшиг, осол: ${n}`).addTo(DB.layer);
+    L.marker(c, { icon: L.divIcon({ className: "map-count", html: String(n), iconSize: [26, 18] }) }).addTo(DB.layer);
+  });
+  DB.dis.filter(x => x.lat && x.lng).forEach(x => L.circleMarker([x.lat, x.lng], { radius: 6, color: "#fff", weight: 1.5, fillColor: typeColor(x.disaster_type), fillOpacity: 1 })
+    .bindPopup(`<b>${esc(x.disaster_type)}</b>${x.title ? "<br>" + esc(x.title) : ""}<br>${esc(dtstr(x.started_at))}<br>${esc([x.aimag, x.soum].filter(Boolean).join(", "))}<br>${esc(lossSummary(x))}`).addTo(DB.layer));
+  const types = [...new Set(DB.dis.filter(x => x.lat).map(x => x.disaster_type))];
+  $("db_legend").innerHTML = `<span><i class="dot big"></i>Аймгийн нийт тоо</span>` + types.map(t => `<span><i class="dot" style="background:${typeColor(t)}"></i>${esc(t)}</span>`).join("");
+  setTimeout(() => DB.map.invalidateSize(), 50);
+}
+function orgPerformance() {
+  return S.orgs.map(o => {
+    const ins = DB.ins.filter(x => x.org_id === o.id), vio = DB.vio.filter(x => x.org_id === o.id), plan = num(DB.plans.find(p => p.org_id === o.id)?.planned);
+    const fixed = vio.filter(x => x.status === "Арилгасан").length;
+    return { o, ins: ins.length, plan, pct: plan ? Math.round(ins.length / plan * 100) : null, vio: vio.length, fixed, fixPct: vio.length ? Math.round(fixed / vio.length * 100) : null,
+      late: vio.filter(isOverdue).length, fine: vio.reduce((a, x) => a + num(x.fine_amount), 0), dis: DB.dis.filter(x => x.org_id === o.id).length,
+      deaths: DB.dis.filter(x => x.org_id === o.id).reduce((a, x) => a + num(x.deaths), 0), loss: DB.dis.filter(x => x.org_id === o.id).reduce((a, x) => a + num(x.economic_loss), 0) };
+  });
+}
+function renderRank() {
+  $("db_rankCard").classList.toggle("hidden", !seeAll());
+  if (!seeAll()) return;
+  const rows = orgPerformance().sort((a, b) => (b.pct ?? -1) - (a.pct ?? -1) || b.ins - a.ins || a.o.name.localeCompare(b.o.name, "mn"));
+  $("db_rank").innerHTML = `<div class="rank">${rows.map((r, i) => `<div class="rk"><span class="rk-n">${i + 1}</span><span class="rk-l">${esc(r.o.name)}</span>
+    <span class="hb-t"><span class="hb-f" style="width:${Math.min(100, r.pct ?? 0)}%;background:${r.pct === null ? "#cbd5e1" : r.pct >= 100 ? "#16834a" : r.pct >= 50 ? "#2f6db5" : "#e8892b"}"></span></span>
+    <b class="rk-v">${r.ins}${r.plan ? "/" + r.plan : ""}</b><span class="rk-p">${r.pct === null ? "төлөвлөгөөгүй" : r.pct + "%"}</span><span>${r.late ? `<span class="badge b-red">${r.late} хэтэрсэн</span>` : ""}</span></div>`).join("")}</div>`;
+}
+function renderLatest() {
+  $("db_latest").innerHTML = DB.dis.slice(0, 10).map(x => `<div class="li"><i class="dot" style="background:${typeColor(x.disaster_type)}"></i><div><b>${esc(x.disaster_type)}</b> — ${esc([x.aimag, x.soum].filter(Boolean).join(", "))}<br><span class="muted">${esc(dtstr(x.started_at))} · ${esc(lossSummary(x))}</span></div></div>`).join("") || '<p class="muted">Бүртгэл алга.</p>';
+}
+
+/* ---------- Тайлан, статистик ---------- */
+let ST = { sheets: [] };
+async function loadStats() {
+  const box = $("statsBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters">
+      <div><label>Он</label><select id="st_year">${yearOptions(new Date().getFullYear())}</select></div>
+      <div><label>Хугацаа</label><select id="st_period">${periodOptions}</select></div>
+      <div class="f-btns"><button class="green" id="st_xlsx">Excel татах</button><button class="danger" id="st_print">Хэвлэх / PDF</button></div><div id="st_msg" class="message"></div></div><div id="st_body"></div>`;
+    box.dataset.ready = 1;
+    $("st_year").onchange = $("st_period").onchange = loadStats;
+    $("st_xlsx").onclick = () => exportExcel(`tailan_${$("st_year").value}.xlsx`, ST.sheets);
+    $("st_print").onclick = () => printHtml(`Гамшгаас хамгаалах улсын хяналт — ${$("st_year").value} он, ${$("st_period").selectedOptions[0].text}`, ST.sheets.map(s => `<h2>${esc(s.name)}</h2>${tableHtml(s.rows)}`).join(""));
+  }
+  message("st_msg", "Ачаалж байна...");
+  try { await fetchAll($("st_year").value, $("st_period").value); } catch (e) { return message("st_msg", "Алдаа: " + safeError(e), "error"); }
+  message("st_msg", "");
+  const perf = orgPerformance().filter(r => seeAll() || r.o.id === S.profile.org_id);
+  const t1 = [["Аймаг, байгууллага", "Гамшиг, осол", "Нас барсан", "Хохирол ₮", "Шалгалт (төлөвлөгөө)", "Гүйцэтгэл %", "Зөрчил", "Арилгасан %", "Хугацаа хэтэрсэн", "Торгууль ₮"],
+    ...perf.map(r => [r.o.name, r.dis, r.deaths, r.loss, r.plan ? `${r.ins} (${r.plan})` : r.ins, r.pct ?? "", r.vio, r.fixPct ?? "", r.late, r.fine])];
+  const tot = k => perf.reduce((a, r) => a + num(r[k]), 0);
+  t1.push(["НИЙТ", tot("dis"), tot("deaths"), tot("loss"), `${tot("ins")} (${tot("plan")})`, tot("plan") ? Math.round(tot("ins") / tot("plan") * 100) : "", tot("vio"), tot("vio") ? Math.round(tot("fixed") / tot("vio") * 100) : "", tot("late"), tot("fine")]);
+  const q = d => Math.floor((new Date(d).getMonth()) / 3) + 1;
+  const t2 = [["Улирал", "Гамшиг, осол", "Нас барсан", "Гэмтсэн", "Хохирол ₮", "Шалгалт", "Зөрчил"], ...[1, 2, 3, 4].map(n => {
+    const ds = DB.dis.filter(x => q(x.started_at) === n), is = DB.ins.filter(x => q(x.inspection_date) === n), ids = is.map(x => x.id);
+    return [`${n}-р улирал`, ds.length, ds.reduce((a, x) => a + num(x.deaths), 0), ds.reduce((a, x) => a + num(x.injured), 0), ds.reduce((a, x) => a + num(x.economic_loss), 0), is.length, DB.vio.filter(v => ids.includes(v.inspection_id)).length];
+  })];
+  const t3 = [["Гамшгийн төрөл", "Тоо", "Нас барсан", "Гэмтсэн", "Нүүлгэсэн", "Мал", "Хохирол ₮"], ...LISTS.disasterTypes.map(t => { const ds = DB.dis.filter(x => x.disaster_type === t);
+    return [t, ds.length, ds.reduce((a, x) => a + num(x.deaths), 0), ds.reduce((a, x) => a + num(x.injured), 0), ds.reduce((a, x) => a + num(x.evacuated), 0), ds.reduce((a, x) => a + num(x.livestock_loss), 0), ds.reduce((a, x) => a + num(x.economic_loss), 0)]; }).filter(r => r[1])];
+  const t4 = [["Хяналтын чиглэл", "Шалгалт", "Зөрчилтэй", "Зөрчил", "Арилгасан", "Хугацаа хэтэрсэн"], ...LISTS.topics.map(t => { const is = DB.ins.filter(x => x.topic === t), ids = is.map(x => x.id), vs = DB.vio.filter(v => ids.includes(v.inspection_id));
+    return [t, is.length, is.filter(x => x.result === "Зөрчилтэй").length, vs.length, vs.filter(v => v.status === "Арилгасан").length, vs.filter(isOverdue).length]; }).filter(r => r[1])];
+  ST.sheets = [{ name: "Аймаг, байгууллагаар", rows: t1 }, { name: "Улирлаар", rows: t2 }, { name: "Гамшгийн төрлөөр", rows: t3 }, { name: "Шалгалтын чиглэлээр", rows: t4 }];
+  const fmtCell = c => typeof c === "number" ? fmt(c) : esc(c);
+  $("st_body").innerHTML = ST.sheets.map(s => `<div class="card"><div class="card-h">${esc(s.name)}</div><div class="table-wrap"><table class="stat">${s.rows.map((r, i) => `<tr${i && r[0] === "НИЙТ" ? ' class="tot"' : ""}>${r.map(c => i ? `<td>${fmtCell(c)}</td>` : `<th>${esc(c)}</th>`).join("")}</tr>`).join("")}</table></div></div>`).join("");
+}
+
+/* ---------- Шалгалтын төлөвлөгөө (админ) ---------- */
+async function loadPlans() {
+  const box = $("plansBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="filters"><div><label>Он</label><select id="pl_year">${yearOptions(new Date().getFullYear())}</select></div>
+      <div class="f-btns"><button id="pl_save">Хадгалах</button></div><div id="pl_msg" class="message"></div></div>
+      <p class="muted">Байгууллага бүрийн тухайн онд хийх хяналт шалгалтын тоог оруулна. Dashboard дээрх гүйцэтгэлийн хувь үүнээс тооцогдоно.</p><div class="table-wrap" id="pl_table"></div>`;
+    box.dataset.ready = 1; $("pl_year").onchange = loadPlans; $("pl_save").onclick = savePlans;
+  }
+  const { data, error } = await S.sb.from("inspection_plans").select("*").eq("year", Number($("pl_year").value));
+  if (error) return message("pl_msg", "Алдаа: " + safeError(error), "error");
+  $("pl_table").innerHTML = `<table><tr><th>Байгууллага</th><th style="width:200px">Төлөвлөсөн шалгалтын тоо</th></tr>${S.orgs.map(o => `<tr><td>${esc(o.name)}</td><td><input type="number" min="0" class="pl_in" data-org="${o.id}" value="${num((data || []).find(p => p.org_id === o.id)?.planned)}"></td></tr>`).join("")}</table>`;
+}
+async function savePlans() {
+  const y = Number($("pl_year").value);
+  const rows = [...document.querySelectorAll(".pl_in")].map(i => ({ org_id: Number(i.dataset.org), year: y, planned: num(i.value) }));
+  const { error } = await S.sb.from("inspection_plans").upsert(rows, { onConflict: "org_id,year" });
+  message("pl_msg", error ? "Алдаа: " + safeError(error) : "Хадгаллаа.", error ? "error" : "success");
+}
+
+/* ---------- Байгууллага, хэрэглэгч, аудит (админ) ---------- */
+async function loadUsers() {
+  const [p, a] = await Promise.all([S.sb.from("profiles").select("*"), S.sb.from("audit_log").select("*").order("id", { ascending: false }).limit(100)]);
+  const profs = p.data || [], ROLE = { admin: "Админ", viewer: "Удирдлага", org: "Байгууллага" };
+  const tname = { disasters: "Гамшиг, осол", inspections: "Шалгалт", violations: "Зөрчил" }, act = { INSERT: "Нэмсэн", UPDATE: "Зассан", DELETE: "Устгасан" };
+  const who = id => { const x = profs.find(q => q.user_id === id); return x ? (x.full_name || orgName(x.org_id)) : "—"; };
+  $("usersBox").innerHTML = `
+    <div class="card"><div class="card-h">Байгууллага, хэрэглэгч (${profs.length})</div><div class="table-wrap"><table><tr><th>Байгууллага</th><th>Нэр</th><th>Эрх</th><th>Нэвтрэх и-мэйл</th></tr>
+      ${profs.sort((x, y) => (S.orgById[x.org_id]?.sort_order ?? -1) - (S.orgById[y.org_id]?.sort_order ?? -1)).map(x => `<tr><td>${esc(x.org_id ? orgName(x.org_id) : "ОБЕГ")}</td><td>${esc(x.full_name || "")}</td><td>${esc(ROLE[x.role] || x.role)}</td><td>${esc(S.orgById[x.org_id]?.login_email || "")}</td></tr>`).join("")}</table></div>
+      <p class="muted">Шинэ хэрэглэгч нэмэх, нууц үг шинэчлэхийг Supabase-ийн SQL Editor-оос хийнэ (зааврыг үзнэ үү).</p></div>
+    <div class="card"><div class="card-h">Аудитын бүртгэл (сүүлийн 100)</div><div class="table-wrap"><table><tr><th>Огноо</th><th>Хэрэглэгч</th><th>Үйлдэл</th><th>Бүртгэл</th><th>Тайлбар</th></tr>
+      ${(a.data || []).map(x => `<tr><td>${esc(dtstr(x.at))}</td><td>${esc(who(x.user_id))}</td><td>${esc(act[x.action] || x.action)}</td><td>${esc(tname[x.table_name] || x.table_name)} #${esc(x.row_id)}</td><td>${esc(x.summary || "")}</td></tr>`).join("") || '<tr><td colspan="5" class="muted">Бүртгэл алга.</td></tr>'}</table></div></div>`;
+}
+
+</script>
+<script>
+/* ===== js/main.js ===== */
+"use strict";
+/* ЭХЛҮҮЛЭХ — бүх файл ачаалагдсаны дараа ажиллана */
+(async function init() {
+  $("loginBtn").onclick = login;
+  $("password").onkeydown = e => { if (e.key === "Enter") login(); };
+  $("forgotBtn").onclick = forgotPw;
+  $("logoutBtn").onclick = logout;
+  $("pwOpenBtn").onclick = () => openPw(false);
+  $("pwCancel").onclick = () => { if (!pwForced) $("pwModal").classList.add("hidden"); };
+  $("pwSave").onclick = savePw;
+  $("modalClose").onclick = closeModal;
+  $("modal").onclick = e => { if (e.target.id === "modal") closeModal(); };
+  $("navToggle").onclick = () => $("app").classList.toggle("nav-open");
+  $("navOverlay").onclick = () => $("app").classList.remove("nav-open");
+  window.addEventListener("hashchange", () => { const k = location.hash.slice(1); if (S.profile && PAGES[k] && k !== currentPage) go(k); });
+  if (!window.supabase) return message("loginStatus", "Supabase сан ачаалагдсангүй. Интернэт холболтоо шалгана уу.", "error");
+  if (SUPABASE_URL.includes("ТАНЫ") || SUPABASE_KEY.includes("ТАНЫ")) return message("loginStatus", "js/config.js файлд Supabase-ийн URL болон key-г оруулна уу.", "error");
+  S.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  try {
+    const { data } = await S.sb.auth.getSession();
+    if (data.session) { S.user = data.session.user; await showApp(); }
+  } catch (e) { message("loginStatus", "Алдаа: " + safeError(e), "error"); }
+})();
+
+</script>
+</body></html>
