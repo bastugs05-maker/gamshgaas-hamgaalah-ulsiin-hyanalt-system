@@ -189,7 +189,7 @@ table.compact td,table.compact th{padding:6px 8px}
     <a class="nav-item" data-go="stats">06 · Статистик</a>
     <a class="nav-item" data-go="users">07 · Байгууллага, хэрэглэгч</a>
   </nav>
-  <div class="ver">Хувилбар 1.6 © ОБЕГ</div>
+  <div class="ver">Хувилбар 1.7 © ОБЕГ</div>
 </aside>
 <div class="overlay" id="navOverlay"></div>
 <div class="main">
@@ -1475,12 +1475,12 @@ function renderKpis() {
   const nOrg = seeAll() ? S.orgs.length : 1, dueIds = new Set(DB.reqs.filter(q => !q.due_date || q.due_date <= today()).map(q => q.id));
   const rOk = cnt(DB.reps, "Баталгаажсан"), rWait = cnt(DB.reps, "Илгээсэн"), rRet = cnt(DB.reps, "Буцаасан");
   const rMiss = Math.max(0, dueIds.size * nOrg - DB.reps.filter(r => dueIds.has(r.requirement_id)).length);
-  // Хугацаа нь болсон тайлангаас дор хаяж нэгийг ирүүлээгүй байгууллагын тоо
+  // Тухайн онд нэг ч тайлан ирүүлээгүй байгууллагын тоо
   const orgsAll = seeAll() ? S.orgs.filter(o => o.active !== false) : [{ id: S.profile.org_id }];
-  const missOrgs = orgsAll.filter(o => [...dueIds].some(q => !DB.reps.some(r => r.org_id === o.id && r.requirement_id === q))).length;
+  const sentOrgs = orgsAll.filter(o => DB.reps.some(r => r.org_id === o.id)).length, missOrgs = orgsAll.length - sentOrgs;
   $("db_kpis").innerHTML = `<div class="sgrid">
     ${sumCard("#ff6b6b", "Гамшиг, ослын бүртгэл", `Нийт бүртгэл ${fmt(d.length)}`, "disList", [["ok", "Баталгаажсан", fmt(dOk)], ["wait", "Хянагдаж байгаа", fmt(dWait)], ["bad", "Буцаагдсан", fmt(dRet)], ["people", "Нас барсан / гэмтсэн", `${fmt(sum("deaths"))} / ${fmt(sum("injured"))}`]])}
-    ${sumCard("#2ec4b6", "Тайлан ирүүлэлт", `Нийт тайлан ${fmt(DB.reps.length)}`, "repList", [["ok", "Баталгаажсан", fmt(rOk)], ["wait", "Хянагдаж байгаа", fmt(rWait)], ["bad", "Буцаагдсан", fmt(rRet)], ["draft", seeAll() ? "Ирүүлээгүй байгууллага" : "Ирүүлээгүй тайлан", seeAll() ? `${fmt(missOrgs)} / ${fmt(orgsAll.length)}` : fmt(rMiss), "repPerf"]])}
+    ${sumCard("#2ec4b6", "Тайлан ирүүлэлт", `Нийт тайлан ${fmt(DB.reps.length)}${seeAll() ? ` · ирүүлсэн байгууллага ${fmt(sentOrgs)} / ${fmt(orgsAll.length)}` : ""}`, "repList", [["ok", "Баталгаажсан", fmt(rOk)], ["wait", "Хянагдаж байгаа", fmt(rWait)], ["bad", "Буцаагдсан", fmt(rRet)], ["draft", seeAll() ? "Ирүүлээгүй байгууллага" : "Ирүүлээгүй тайлан", seeAll() ? `${fmt(missOrgs)} / ${fmt(orgsAll.length)}` : fmt(rMiss), "repPerf"]])}
     ${sumCard("#4c7bd9", "Улсын хяналт шалгалт", `Нийт шалгалт ${fmt(I.length)}${plan ? ` · төлөвлөгөө ${Math.round(I.length / plan * 100)}%` : ""}`, "inspList", [["ok", "Баталгаажсан", fmt(iOk)], ["wait", "Хянагдаж байгаа", fmt(iWait)], ["bad", "Буцаагдсан", fmt(iRet)], ["alert", "Зөрчилтэй", fmt(iBad)]])}
     ${sumCard("#8e6bd8", "Зөрчил, шаардлагын биелэлт", `Нийт зөрчил ${fmt(v.length)} · торгууль ${moneyShort(v.reduce((a, x) => a + num(x.fine_amount), 0))}`, "viol", [["ok", "Арилгасан", fmt(vFix)], ["wait", "Хэрэгжиж байна", fmt(vProg)], ["bad", "Биелээгүй", fmt(vNot)], ["alert", "Хугацаа хэтэрсэн", fmt(vLate)]])}
     </div>
