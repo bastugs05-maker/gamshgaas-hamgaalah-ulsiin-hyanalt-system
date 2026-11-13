@@ -202,6 +202,26 @@ body.standalone .topbar{padding-top:max(8px,env(safe-area-inset-top))}
   html,body{overflow-x:hidden}
 }
 
+/* ---- Мэдэгдэл, байцаагч, акт ---- */
+.mail-bar{background:#2f5fb5}
+.note-amber{background:#fff7e6;border:1px solid #f5d08a;color:#7a4b00;border-radius:8px;padding:10px 12px;margin:8px 0}
+.ev-list{margin:4px 0 12px;padding-left:20px;line-height:1.6;color:#334155}
+.notify-card input#nm_emails{font-size:16px}
+.cov{display:flex;flex-wrap:wrap;gap:6px}.cov-i{padding:4px 10px;border-radius:14px;font-size:13px}.cov-i.ok{background:#e7f6ec;color:#16834a}.cov-i.no{background:#fdecea;color:#c0392b}
+tr.row-off td{opacity:.6}
+#i_inspPick{margin-bottom:6px}
+.act-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 4px;padding:10px;background:#f1f5fb;border-radius:10px}
+
+/* ---- Байцаагчийн ажил дүгнэх ---- */
+table.ev-t th,table.ev-t td{text-align:center;white-space:nowrap;padding:8px 8px}
+table.ev-t td:first-child,table.ev-t th:first-child{text-align:left;white-space:normal;min-width:170px}
+.grade{display:inline-block;padding:3px 9px;border-radius:10px;font-weight:700;font-size:12px;white-space:nowrap}
+.g-A{background:#d9f2e3;color:#16683a}.g-B{background:#e1ecfb;color:#1f4f9a}.g-C{background:#fff2cc;color:#7a5600}.g-D{background:#ffe2c7;color:#8a3d00}.g-F{background:#fdd9d6;color:#9b1c13}
+fieldset{border:1px solid #dfe4ec;border-radius:10px;padding:8px 12px 12px;margin:10px 0}
+fieldset legend{font-weight:700;color:#14284b;padding:0 6px;font-size:14px}
+.ev-calc{margin:12px 0;overflow-x:auto}
+.ev-help{margin-top:14px;font-size:13px;color:#475569}.ev-help summary{cursor:pointer;font-weight:600;color:#14284b}.ev-help ul{padding-left:18px;line-height:1.6}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -227,15 +247,16 @@ body.standalone .topbar{padding-top:max(8px,env(safe-area-inset-top))}
     <div class="nav-group open"><button class="nav-head">02 · Гамшиг, осол <span class="chev">▶</span></button><div class="nav-sub">
       <a data-go="disForm">Бүртгэх</a><a data-go="disList">Бүртгэлийн жагсаалт</a><a data-go="risk">Эрсдэлтэй цэгүүд</a></div></div>
     <div class="nav-group open"><button class="nav-head">03 · Улсын хяналт шалгалт <span class="chev">▶</span></button><div class="nav-sub">
-      <a data-go="inspForm">Шалгалт бүртгэх</a><a data-go="inspList">Шалгалтын жагсаалт</a><a data-go="plans">Шалгалтын төлөвлөгөө</a></div></div>
+      <a data-go="inspForm">Шалгалт бүртгэх</a><a data-go="inspList">Шалгалтын жагсаалт</a><a data-go="inspectors">Улсын байцаагч</a><a data-go="evals">Байцаагчийн ажил дүгнэх</a><a data-go="plans">Шалгалтын төлөвлөгөө</a></div></div>
     <a class="nav-item" data-go="viol">04 · Зөрчил, шаардлага</a>
     <div class="nav-group open"><button class="nav-head">05 · Тайлан <span class="chev">▶</span></button><div class="nav-sub">
       <a data-go="repForm">Тайлан илгээх</a><a data-go="repList">Тайлангууд</a><a data-go="repPerf">Тайлангийн гүйцэтгэл</a><a data-go="repReq">Тайлангийн хуваарь</a></div></div>
     <a class="nav-item" data-go="stats">06 · Статистик</a>
     <a class="nav-item" data-go="users">07 · Байгууллага, хэрэглэгч</a>
+    <a class="nav-item" data-go="notify">🔔 И-мэйл мэдэгдэл</a>
   </nav>
   <button type="button" class="nav-install hidden" data-install>📲 Утсанд суулгах</button>
-  <div class="ver">Хувилбар 1.9 © ОБЕГ</div>
+  <div class="ver">Хувилбар 2.1 © ОБЕГ</div>
 </aside>
 <div class="overlay" id="navOverlay"></div>
 <div class="main">
@@ -243,11 +264,15 @@ body.standalone .topbar{padding-top:max(8px,env(safe-area-inset-top))}
     <div class="top-user"><span id="userInfo"></span><button id="pwOpenBtn" class="secondary">Нууц үг солих</button><button id="logoutBtn" class="secondary">Гарах</button></div></div>
   <div class="content">
     <div id="installBar" class="install-bar hidden"><span>📲 Энэ системийг утсандаа апп болгож суулгавал нүүр дэлгэцээс шууд нээгдэнэ.</span><button class="sm" data-install>Суулгах</button><button class="sm secondary" id="installBarX" title="Хаах">✕</button></div>
+    <div id="mailBar" class="install-bar mail-bar hidden"><span>🔔 Тайлан баталгаажих, буцаагдах, хугацаа дөхөх үед и-мэйл авахын тулд мэдэгдэл авах хаягаа оруулна уу.</span><button class="sm" data-go="notify">Оруулах</button></div>
     <div id="offlineBar" class="offline-bar hidden">⚠ Интернэт холболт тасарсан байна. Холбогдсоны дараа мэдээлэл хадгалагдана.</div>
     <section data-page="dash" id="dashBox"></section>
     <section data-page="disForm" class="card" id="disFormBox"></section>
     <section data-page="disList" class="card" id="disListBox"></section>
     <section data-page="risk" id="riskBox"></section>
+    <section data-page="inspectors" id="inspectorsBox"></section>
+    <section data-page="notify" id="notifyBox"></section>
+    <section data-page="evals" id="evalsBox"></section>
     <section data-page="inspForm" class="card" id="inspFormBox"></section>
     <section data-page="inspList" class="card" id="inspListBox"></section>
     <section data-page="viol" class="card" id="violBox"></section>
@@ -285,10 +310,10 @@ const BUCKET = "hyanalt-files";
 const LISTS = {
   disasterTypes: ["Үер", "Усанд осолдох", "Гал түймэр", "Ой, хээрийн түймэр", "Газар хөдлөлт", "Хүчтэй салхи, шуурга", "Цасан шуурга", "Зуд", "Аянга", "Аюултай бодисын осол", "Зам тээврийн осол", "Барилга байгууламж нурах", "Халдварт өвчин", "Бусад осол"],
   responseActions: ["Аврах", "Унтраах", "Нүүлгэн шилжүүлэх", "Эмнэлгийн анхны тусламж", "Хүмүүнлэгийн тусламж", "Хорио цээр", "Сэргээн босгох"],
-  inspectionTypes: ["Төлөвлөгөөт", "Төлөвлөгөөт бус", "Гүйцэтгэлийн шалгалт", "Гомдол, мэдээллээр"],
+  inspectionTypes: ["Төлөвлөгөөт", "Төлөвлөгөөт бус", "Урьдчилан сэргийлэх", "Гүйцэтгэлийн шалгалт", "Гомдол, мэдээллээр"],
   topics: ["Гал түймрийн аюулгүй байдал", "Гамшгаас хамгаалах төлөвлөгөө", "Аюултай бодис, химийн хор", "Барилга байгууламжийн аюулгүй байдал", "Гамшгаас хамгаалах хүч, хэрэгсэл", "Сургалт, дадлага", "Бусад"],
   targetTypes: ["Төрийн байгууллага", "Аж ахуйн нэгж", "Боловсролын байгууллага", "Эрүүл мэндийн байгууллага", "Үйлдвэр", "Олон нийтийн газар", "Орон сууц", "Бусад"],
-  requirementTypes: ["Улсын байцаагчийн албан шаардлага", "Акт", "Зөвлөмж"],
+  requirementTypes: ["Улсын байцаагчийн албан шаардлага", "Мэдэгдэл", "Акт", "Зөвлөмж", "Дүгнэлт", "Танилцуулга", "Ажиллагаа зогсоох тогтоол"],
   penaltyTypes: ["Байхгүй", "Сануулга", "Торгууль", "Үйл ажиллагааг түр зогсоох"],
   reportTypes: ["Хяналт шалгалтын тайлан", "Гамшиг, ослын тайлан", "Үйл ажиллагааны тайлан", "Сургалт, дадлагын тайлан", "Бусад тайлан"],
   reportPeriods: ["I улирал", "II улирал", "III улирал", "IV улирал", "I хагас жил", "II хагас жил", "Жилийн", "1-р сар", "2-р сар", "3-р сар", "4-р сар", "5-р сар", "6-р сар", "7-р сар", "8-р сар", "9-р сар", "10-р сар", "11-р сар", "12-р сар"],
@@ -318,6 +343,16 @@ const AIMAG_CENTERS = {
   "Хэнтий": [47.32, 110.65], "Улаанбаатар": [47.92, 106.92]
 };
 const AIMAGS = Object.keys(AIMAG_CENTERS);
+
+/* ОБЕГ-ын даргын 2025 оны А/236 тушаал: Гамшгаас хамгаалах улсын хяналтын байцаагчийн ажил дүгнэх журам */
+const EVAL_ZONES = {
+  1: ["Баян-Өлгий", "Баянхонгор", "Дархан-Уул", "Орхон", "Өмнөговь", "Төв", "Сэлэнгэ", "Ховд", "Баянгол дүүрэг", "Баянзүрх дүүрэг", "Сонгинохайрхан дүүрэг", "Сүхбаатар дүүрэг", "Чингэлтэй дүүрэг", "Хан-Уул дүүрэг", "Нийслэлийн Онцгой байдлын газар"],
+  2: ["Архангай", "Говь-Алтай", "Дорноговь", "Дорнод", "Завхан", "Өвөрхангай", "Увс", "Хөвсгөл", "Хэнтий", "Багануур дүүрэг", "Налайх дүүрэг"],
+  3: ["Булган", "Говьсүмбэр", "Дундговь", "Сүхбаатар", "Багахангай дүүрэг"],
+  4: ["Гамшгаас хамгаалах сургалтын 116 дугаар анги"]
+};
+const EVAL_NORM = { 1: { n: 20, p: 80 }, 2: { n: 15, p: 70 }, 3: { n: 10, p: 60 }, 4: { n: 5, p: 50 } };   // журмын 3.1
+const EVAL_GRADES = [[90, "A", "Маш сайн"], [80, "B", "Сайн"], [70, "C", "Хангалттай"], [60, "D", "Дутагдалтай"], [0, "F", "Хангалтгүй"]];   // журмын 5.4
 
 </script>
 <script>
@@ -420,6 +455,9 @@ const PAGES = {
   disForm: { title: "Гамшиг, осол бүртгэх", roles: ["org"], load: () => openDisasterForm() },
   disList: { title: "Гамшиг, ослын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadDisasters() },
   risk: { title: "Эрсдэлтэй цэгүүд", roles: ["admin", "viewer", "org"], load: () => loadRiskPage() },
+  inspectors: { title: "Улсын байцаагч", roles: ["admin", "viewer", "org"], load: () => loadInspectorsPage() },
+  evals: { title: "Байцаагчийн ажил дүгнэх", roles: ["admin", "viewer", "org"], load: () => loadEvalsPage() },
+  notify: { title: "И-мэйл мэдэгдэл", roles: ["admin", "viewer", "org"], load: () => loadNotifyPage() },
   inspForm: { title: "Хяналт шалгалт бүртгэх", roles: ["org"], load: () => openInspectionForm() },
   inspList: { title: "Хяналт шалгалтын бүртгэл", roles: ["admin", "viewer", "org"], load: () => loadInspections() },
   viol: { title: "Зөрчил, шаардлагын биелэлт", roles: ["admin", "viewer", "org"], load: () => loadViolations() },
@@ -487,7 +525,7 @@ async function showApp() {
   S.orgs = og.data || []; S.orgById = Object.fromEntries(S.orgs.map(o => [o.id, o]));
   $("loginSection").classList.add("hidden"); $("app").classList.remove("hidden");
   $("userInfo").textContent = (S.profile.full_name || S.user.email) + " · " + ({ admin: "Админ", viewer: "Удирдлага", org: "Байгууллага" }[role()] || "");
-  refreshNav(); refreshRepBadge();
+  refreshNav(); refreshRepBadge(); refreshMailBar();
   go(location.hash.slice(1) || "dash");
   if (PW_RECOVERY) openPw(true, "Нууц үг сэргээх холбоосоор орлоо. Шинэ нууц үгээ оруулна уу.");
   else if (!S.user.user_metadata?.pw_changed) openPw(true, "Аюулгүй байдлын үүднээс анхны нууц үгээ өөрийн нууц үгээр солино уу.");
@@ -739,9 +777,11 @@ async function openInspectionForm(row, viols) {
     </div>
     <div class="grid g3">
       <div><label>Удирдамжийн дугаар</label><input id="i_guide" value="${esc(d.guideline_no)}"></div>
-      <div><label>Улсын байцаагч(ид)</label><input id="i_insp" value="${esc(d.inspectors)}" placeholder="Нэр, дугаар"></div>
       <div><label>Актын дугаар</label><input id="i_act" value="${esc(d.act_number)}"></div>
     </div>
+    <label>Улсын байцаагч(ид) <span class="muted">— бүртгэлээс сонгоно</span></label>
+    <div id="i_inspPick" class="checks"><span class="muted">Ачаалж байна...</span></div>
+    <input id="i_insp" value="${esc(d.inspectors)}" placeholder="Бүртгэлд байхгүй байцаагч байвал гараар бичнэ (нэр, үнэмлэх)">
     <h3>Шалгагдсан байгууллага, объект</h3>
     <div class="grid g3">
       <div><label>Нэр *</label><input id="i_target" value="${esc(d.target_name)}"></div>
@@ -764,7 +804,7 @@ async function openInspectionForm(row, viols) {
     <label>Дүгнэлт</label><textarea id="i_concl">${esc(d.conclusion)}</textarea>
     <div class="actions"><button id="i_save">${row ? "Хадгалах" : "Бүртгэх"}</button>${row ? '<button class="secondary" id="i_cancel">Болих</button>' : ""}</div>
     <div id="i_msg" class="message"></div>`;
-  renderViolEditor(); toggleViolSection();
+  renderViolEditor(); toggleViolSection(); mountInspectorPicker(d);
   $("i_result").onchange = () => { toggleViolSection(); if ($("i_result").value === "Зөрчилтэй" && !INS.editViols.length) { INS.editViols.push({}); renderViolEditor(); } };
   document.querySelectorAll(".i_ck").forEach(s => s.onchange = () => {
     if ([...document.querySelectorAll(".i_ck")].some(x => x.value === "Үгүй") && !$("i_result").value) { $("i_result").value = "Зөрчилтэй"; $("i_result").onchange(); }
@@ -786,11 +826,12 @@ async function saveInspection() {
     const newFiles = await uploadFiles($("i_files").files, "inspections");
     const data = {
       org_id, inspection_date: v("i_date"), inspection_type: v("i_type"), topic: v("i_topic"), guideline_no: v("i_guide") || null,
-      inspectors: v("i_insp") || null, act_number: v("i_act") || null, target_name: v("i_target"), target_type: v("i_ttype") || null,
+      inspectors: [...(pickedInspectors()?.names || []), v("i_insp")].filter(Boolean).join("; ") || null, act_number: v("i_act") || null, target_name: v("i_target"), target_type: v("i_ttype") || null,
       target_register: v("i_reg") || null, aimag: v("i_aimag") || null, soum: v("i_soum") || null, address: v("i_addr") || null,
       checklist: LISTS.checklist.map((q, i) => ({ q, a: document.querySelector(`.i_ck[data-q="${i}"]`).value })).filter(c => c.a),
       result: v("i_result"), conclusion: v("i_concl") || null, files: [...(INS.editing?.files || []), ...newFiles]
     };
+    const pk = pickedInspectors(); if (pk) data.inspector_ids = pk.ids;
     let id = INS.editing?.id;
     if (id) { const { error } = await S.sb.from("inspections").update(data).eq("id", id); if (error) throw error; }
     else { const { data: ins, error } = await S.sb.from("inspections").insert(data).select("id").single(); if (error) throw error; id = ins.id; }
@@ -884,6 +925,7 @@ function inspectionDetail(i) {
     ${row("Үр дүн", badge(i.result))}${row("Дүгнэлт", esc(i.conclusion || "—"))}
     ${row("Төлөв", badge(i.status) + (i.review_comment ? " <span class='muted'>" + esc(i.review_comment) + "</span>" : ""))}
     ${row("Байгууллага", esc(orgName(i.org_id)))}${row("Файл", fileButtons(i.files))}</table>
+    ${actButtons(i)}
     ${(i.checklist || []).length ? `<h3>Шалгах хуудас</h3><table><tr><th>Шалгуур</th><th>Хариу</th></tr>${i.checklist.map(c => `<tr><td>${esc(c.q)}</td><td>${c.a === "Үгүй" ? "<b class='red'>Үгүй</b>" : esc(c.a)}</td></tr>`).join("")}</table>` : ""}
     ${vs.length ? `<h3>Зөрчил, шаардлага</h3><table><tr><th>Зөрчил</th><th>Шаардлага</th><th>Хугацаа</th><th>Хариуцлага</th><th>Төлөв</th></tr>${vs.map(x => `<tr><td>${esc(x.description)}<br><span class="muted">${esc(x.legal_basis || "")}</span></td><td>${esc(x.requirement_type)} ${esc(x.requirement_number || "")}</td><td>${esc(x.deadline || "—")}</td><td>${esc(x.penalty_type)}${num(x.fine_amount) ? "<br>" + money(x.fine_amount) + (x.fine_paid ? " (төлсөн)" : "") : ""}</td><td>${badge(violStatus(x))}</td></tr>`).join("")}</table>` : ""}`;
 }
@@ -1757,6 +1799,639 @@ async function loadUsers() {
       <p class="muted">Шинэ хэрэглэгч нэмэх, нууц үг шинэчлэхийг Supabase-ийн SQL Editor-оос хийнэ (зааврыг үзнэ үү).</p></div>
     <div class="card"><div class="card-h">Аудитын бүртгэл (сүүлийн 100)</div><div class="table-wrap"><table><tr><th>Огноо</th><th>Хэрэглэгч</th><th>Үйлдэл</th><th>Бүртгэл</th><th>Тайлбар</th></tr>
       ${(a.data || []).map(x => `<tr><td>${esc(dtstr(x.at))}</td><td>${esc(who(x.user_id))}</td><td>${esc(act[x.action] || x.action)}</td><td>${esc(tname[x.table_name] || x.table_name)} #${esc(x.row_id)}</td><td>${esc(x.summary || "")}</td></tr>`).join("") || '<tr><td colspan="5" class="muted">Бүртгэл алга.</td></tr>'}</table></div></div>`;
+}
+
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   УЛСЫН БАЙЦААГЧИЙН БҮРТГЭЛ
+   ===================================================================== */
+let INSP = { rows: [], stats: {}, ok: true, editing: null };
+const inspLabel = p => p.full_name + (p.cert_no ? ` (${p.cert_no})` : "");
+function certState(p) {
+  if (!p.cert_expires) return { cls: "b-gray", txt: "огноогүй" };
+  const days = Math.round((new Date(p.cert_expires) - new Date(today())) / 864e5);
+  if (days < 0) return { cls: "b-red", txt: "хугацаа дууссан", days };
+  if (days <= 60) return { cls: "b-amber", txt: `${days} хоног үлдсэн`, days };
+  return { cls: "b-green", txt: "хүчинтэй", days };
+}
+
+async function loadInspectorsPage() {
+  const box = $("inspectorsBox");
+  if (!box.dataset.ready) {
+    box.innerHTML = `<div class="card">
+      <div class="card-h map-h"><span>Улсын байцаагчийн бүртгэл</span>${isOrg() ? '<button id="ip_new">+ Байцаагч нэмэх</button>' : ""}</div>
+      <div class="filters">
+        <div><label>Он (гүйцэтгэл)</label><select id="ip_year">${yearOptions(new Date().getFullYear())}</select></div>
+        ${seeAll() ? `<div><label>Байгууллага</label><select id="ip_org">${orgOptions("", "Бүгд")}</select></div>` : ""}
+        <div><label>Төлөв</label><select id="ip_act"><option value="1">Ажиллаж буй</option><option value="0">Чөлөөлөгдсөн</option><option value="">Бүгд</option></select></div>
+        <div><label>Хайх</label><input id="ip_q" placeholder="Нэр, үнэмлэх"></div>
+        <div class="f-btns"><button class="green" id="ip_xlsx">Excel</button></div></div>
+      <div id="ip_sum" class="mini-kpis"></div><div id="ip_info" class="message"></div><div class="table-wrap" id="ip_table"></div></div>`;
+    box.dataset.ready = 1;
+    ["ip_org", "ip_act"].forEach(id => $(id) && ($(id).onchange = renderInspectors));
+    $("ip_q").oninput = renderInspectors; $("ip_year").onchange = fetchInspectors;
+    if ($("ip_new")) $("ip_new").onclick = () => openInspectorForm();
+    $("ip_xlsx").onclick = () => exportExcel("ulsiin_baitsaagch.xlsx", [{ name: "Улсын байцаагч", rows: [["Нэр", "Албан тушаал", "Үнэмлэх", "Олгосон", "Дуусах", "Төлөв", "Утас", "И-мэйл", "Байгууллага", "Шалгалт", "Зөрчилтэй шалгалт", "Илрүүлсэн зөрчил"],
+      ...filteredInspectors().map(p => { const s = INSP.stats[p.id] || {}; return [p.full_name, p.position || "", p.cert_no || "", p.cert_issued || "", p.cert_expires || "", certState(p).txt, p.phone || "", p.email || "", orgName(p.org_id), s.n || 0, s.bad || 0, s.viol || 0]; })] }]);
+  }
+  await fetchInspectors();
+}
+async function fetchInspectors() {
+  message("ip_info", "Ачаалж байна...");
+  const [a, b] = yearRange($("ip_year").value);
+  let p, i;
+  try {
+    [p, i] = await Promise.all([
+      S.sb.from("inspectors").select("*").order("full_name"),
+      S.sb.from("inspections").select("id,inspector_ids,result").gte("inspection_date", a).lt("inspection_date", b)
+    ]);
+  } catch (e) { p = { error: e }; }
+  if (p.error) { INSP.ok = false; return message("ip_info", "Байцаагчийн бүртгэл идэвхжээгүй байна. Supabase-д 5-р алхмын SQL-ийг ажиллуулна уу.", "error"); }
+  INSP.ok = true; INSP.rows = p.data || []; INSP.stats = {};
+  const ins = i.error ? [] : (i.data || []), ids = ins.map(x => x.id);
+  let vio = [];
+  if (ids.length) { const v = await S.sb.from("violations").select("inspection_id").in("inspection_id", ids); vio = v.data || []; }
+  const vc = {}; vio.forEach(v => vc[v.inspection_id] = (vc[v.inspection_id] || 0) + 1);
+  ins.forEach(x => (x.inspector_ids || []).forEach(pid => { const s = INSP.stats[pid] = INSP.stats[pid] || { n: 0, bad: 0, viol: 0 };
+    s.n++; if (x.result === "Зөрчилтэй") s.bad++; s.viol += vc[x.id] || 0; }));
+  renderInspectors();
+}
+function filteredInspectors() {
+  const og = $("ip_org")?.value || "", ac = $("ip_act").value, q = $("ip_q").value.trim().toLowerCase();
+  return INSP.rows.filter(p => (!og || String(p.org_id) === og) && (ac === "" || String(p.active ? 1 : 0) === ac) &&
+    (!q || [p.full_name, p.cert_no, p.position].join(" ").toLowerCase().includes(q)));
+}
+function renderInspectors() {
+  if (!INSP.ok) return;
+  const list = filteredInspectors(), act = INSP.rows.filter(p => p.active);
+  const exp = act.filter(p => certState(p).cls === "b-red").length, soon = act.filter(p => certState(p).cls === "b-amber").length;
+  $("ip_sum").innerHTML = [["Ажиллаж буй", act.length], ["Үнэмлэх дууссан", exp], ["60 хоногт дуусах", soon], ["Энэ онд шалгалт", Object.values(INSP.stats).reduce((a, s) => a + s.n, 0)]]
+    .map(([k, v]) => `<div class="mk"><span>${k}</span><b>${fmt(v)}</b></div>`).join("");
+  message("ip_info", exp ? `${exp} байцаагчийн үнэмлэхний хугацаа дууссан байна.` : `Нийт ${list.length} байцаагч.`, exp ? "error" : "success");
+  $("ip_table").innerHTML = `<table><tr><th>Нэр, албан тушаал</th><th>Үнэмлэх</th><th>Холбоо барих</th><th>Байгууллага</th><th>Шалгалт</th><th>Илрүүлсэн зөрчил</th><th>Үйлдэл</th></tr>
+    ${list.map(p => { const c = certState(p), s = INSP.stats[p.id] || { n: 0, bad: 0, viol: 0 };
+      return `<tr class="${p.active ? "" : "row-off"}"><td><b>${esc(p.full_name)}</b>${p.active ? "" : ' <span class="badge b-gray">чөлөөлөгдсөн</span>'}<br><span class="muted">${esc(p.position || "")}</span></td>
+      <td>${esc(p.cert_no || "—")}<br><span class="badge ${c.cls}">${esc(c.txt)}</span>${p.cert_expires ? `<br><span class="muted">${esc(p.cert_expires)} хүртэл</span>` : ""}</td>
+      <td>${esc(p.phone || "")}${p.email ? `<br><span class="muted">${esc(p.email)}</span>` : ""}</td><td>${esc(orgName(p.org_id))}</td>
+      <td><b>${s.n}</b>${s.bad ? ` <span class="muted">(зөрчилтэй ${s.bad})</span>` : ""}</td><td>${s.viol}</td>
+      <td class="acts">${isOrg() && p.org_id === S.profile.org_id ? `<button class="sm secondary" data-ip-edit="${p.id}">Засах</button>` : ""}${(isOrg() && p.org_id === S.profile.org_id) || isAdmin() ? `<button class="sm danger" data-ip-del="${p.id}">Устгах</button>` : ""}</td></tr>`; }).join("")
+      || `<tr><td colspan="7" class="muted">Байцаагч бүртгэгдээгүй байна.${isOrg() ? " «+ Байцаагч нэмэх» товчоор нэмнэ үү." : ""}</td></tr>`}</table>`;
+}
+function openInspectorForm(p) {
+  INSP.editing = p || null; const d = p || { active: true };
+  openModal(p ? "Байцаагчийн мэдээлэл засах" : "Улсын байцаагч нэмэх", `
+    <div class="grid"><div><label>Овог, нэр *</label><input id="p_name" value="${esc(d.full_name)}" placeholder="Б.Бат-Эрдэнэ"></div>
+      <div><label>Албан тушаал</label><input id="p_pos" value="${esc(d.position)}" placeholder="Улсын байцаагч, ахлах мэргэжилтэн"></div></div>
+    <div class="grid g3"><div><label>Үнэмлэхний дугаар</label><input id="p_cert" value="${esc(d.cert_no)}"></div>
+      <div><label>Олгосон огноо</label><input type="date" id="p_iss" value="${esc(d.cert_issued || "")}"></div>
+      <div><label>Дуусах огноо</label><input type="date" id="p_exp" value="${esc(d.cert_expires || "")}"></div></div>
+    <div class="grid"><div><label>Утас</label><input id="p_phone" type="tel" value="${esc(d.phone)}"></div>
+      <div><label>И-мэйл</label><input id="p_email" type="email" value="${esc(d.email)}"></div></div>
+    <label>Тэмдэглэл</label><textarea id="p_note">${esc(d.note)}</textarea>
+    <label class="chk"><input type="checkbox" id="p_active" ${d.active ? "checked" : ""}> Ажиллаж байгаа (чөлөөлөгдсөн бол чагтыг авна)</label>
+    <div class="actions"><button id="p_save">${p ? "Хадгалах" : "Нэмэх"}</button><button class="secondary" onclick="closeModal()">Болих</button></div><div id="p_msg" class="message"></div>`);
+  $("p_save").onclick = async () => {
+    const v = id => $(id).value.trim();
+    if (!v("p_name")) return message("p_msg", "Нэрийг бичнэ үү.", "error");
+    if (v("p_iss") && v("p_exp") && v("p_exp") < v("p_iss")) return message("p_msg", "Дуусах огноо олгосноос өмнө байж болохгүй.", "error");
+    const data = { org_id: S.profile.org_id, full_name: v("p_name"), position: v("p_pos") || null, cert_no: v("p_cert") || null, cert_issued: v("p_iss") || null,
+      cert_expires: v("p_exp") || null, phone: v("p_phone") || null, email: v("p_email") || null, note: v("p_note") || null, active: $("p_active").checked };
+    $("p_save").disabled = true;
+    const { error } = INSP.editing ? await S.sb.from("inspectors").update(data).eq("id", INSP.editing.id) : await S.sb.from("inspectors").insert(data);
+    if (error) { $("p_save").disabled = false; return message("p_msg", "Алдаа: " + safeError(error), "error"); }
+    closeModal(); fetchInspectors();
+  };
+}
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-ip-edit],[data-ip-del]"); if (!t) return;
+  if (t.dataset.ipEdit) openInspectorForm(INSP.rows.find(x => String(x.id) === t.dataset.ipEdit));
+  if (t.dataset.ipDel) {
+    if (!confirm("Энэ байцаагчийг бүртгэлээс устгах уу? (Ажлаас гарсан бол «Засах» → «Ажиллаж байгаа» чагтыг авахад хангалттай.)")) return;
+    const { error } = await S.sb.from("inspectors").delete().eq("id", t.dataset.ipDel);
+    if (error) return alert("Алдаа: " + safeError(error)); fetchInspectors();
+  }
+});
+
+/* ---------- Шалгалтын маягтад байцаагч сонгох ---------- */
+async function mountInspectorPicker(d) {
+  const box = $("i_inspPick"); if (!box) return;
+  let data = null, error = null;
+  try { ({ data, error } = await S.sb.from("inspectors").select("id,full_name,cert_no,cert_expires,active").order("full_name")); } catch (e) { error = e; }
+  if (error) { box.innerHTML = ""; box.dataset.ok = ""; $("i_insp").value = d.inspectors || ""; return; }   // 5-р алхам хийгээгүй
+  box.dataset.ok = "1";
+  const sel = new Set((d.inspector_ids || []).map(Number));
+  const list = (data || []).filter(p => p.active || sel.has(p.id));
+  INSP.pick = list;
+  const labels = list.filter(p => sel.has(p.id)).map(inspLabel);
+  $("i_insp").value = String(d.inspectors || "").split(/;\s*/).filter(x => x && !labels.includes(x)).join("; ");
+  box.innerHTML = list.length ? list.map(p => { const c = certState(p);
+    return `<label class="chk"><input type="checkbox" class="i_pid" value="${p.id}" ${sel.has(p.id) ? "checked" : ""}> ${esc(inspLabel(p))}${c.cls === "b-red" ? ' <span class="badge b-red">үнэмлэх дууссан</span>' : ""}</label>`; }).join("")
+    : `<p class="muted">Бүртгэлд байцаагч алга. <a class="link-btn" data-go="inspectors">Байцаагч нэмэх →</a></p>`;
+}
+function pickedInspectors() {
+  const box = $("i_inspPick");
+  if (!box || !box.dataset.ok) return null;
+  const ids = [...document.querySelectorAll(".i_pid:checked")].map(c => Number(c.value));
+  return { ids, names: (INSP.pick || []).filter(p => ids.includes(p.id)).map(inspLabel) };
+}
+
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   АКТ, АЛБАН ШААРДЛАГА ХЭВЛЭХ (PDF — хэвлэх цонхоор, Word — .doc файлаар)
+   ===================================================================== */
+const ACT_CSS = `@page{size:A4;margin:18mm 16mm 18mm 22mm}
+body{font-family:"Times New Roman",Times,serif;font-size:12pt;color:#000;line-height:1.35}
+.hd{text-align:center;font-weight:bold;line-height:1.3}.hd .org{font-size:12pt}.hd .sub{font-size:11pt;font-weight:normal}
+h1{font-size:14pt;text-align:center;margin:16pt 0 10pt;text-transform:uppercase}
+h2{font-size:12pt;margin:14pt 0 6pt}
+.meta{width:100%;border:none;margin:4pt 0 8pt}.meta td{border:none;padding:0;font-size:12pt}
+table.t{border-collapse:collapse;width:100%;margin:4pt 0}table.t th,table.t td{border:1px solid #000;padding:3pt 5pt;font-size:11pt;vertical-align:top;text-align:left}
+table.t th{background:#eee;font-weight:bold}table.t td.c{text-align:center;width:22pt}
+p{margin:4pt 0;text-align:justify}.ind{text-indent:28pt}
+.sign{width:100%;border:none;margin-top:22pt}.sign td{border:none;padding:6pt 0;font-size:12pt;vertical-align:bottom}
+.line{display:inline-block;border-bottom:1px solid #000;min-width:120pt}
+.small{font-size:10pt;color:#333}`;
+const dotted = (v, w) => v ? `<b>${esc(v)}</b>` : `<span class="line" style="min-width:${w || 120}pt">&nbsp;</span>`;
+function orgTitle(id) { const o = S.orgById[id]; if (!o) return ""; return o.kind === "aimag" ? `${o.name} аймгийн Онцгой байдлын газар` : o.name.endsWith(" дүүрэг") ? `${o.name.replace(/ дүүрэг$/, "")} дүүргийн Онцгой байдлын хэлтэс` : o.name; }
+function actHeader(i) {
+  return `<div class="hd"><div class="org">ОНЦГОЙ БАЙДЛЫН ЕРӨНХИЙ ГАЗАР</div><div class="sub">${esc(orgTitle(i.org_id))}</div></div>`;
+}
+/* Албан бичгийн огноо: 2026 оны 11 дүгээр сарын 10-ны */
+function ymd(d) {
+  if (!d) return "____ оны ___ дугаар сарын ___-ны";
+  const [y, m, dd] = String(d).slice(0, 10).split("-").map(Number);
+  const ord = [1, 4, 9, 11].includes(m) ? "дүгээр" : "дугаар", suf = [1, 4, 9].includes(dd % 10) ? "ний" : "ны";
+  return `${y} оны ${m} ${ord} сарын ${dd}-${suf}`;
+}
+
+function actHtml(i) {
+  const vs = INS.viols[i.id] || [], ck = i.checklist || [];
+  const place = [i.aimag, i.soum, i.address].filter(Boolean).join(", ");
+  return `${actHeader(i)}
+  <h1>Улсын байцаагчийн хяналт шалгалтын акт</h1>
+  <table class="meta"><tr><td>${ymd(i.inspection_date)} өдөр</td><td style="text-align:center">№ ${dotted(i.act_number, 60)}</td><td style="text-align:right">${esc(place || "")}</td></tr></table>
+  <p class="ind">Гамшгаас хамгаалах улсын хяналт шалгалтыг ${i.guideline_no ? `<b>${esc(i.guideline_no)}</b> дугаар удирдамжийн дагуу` : "батлагдсан удирдамжийн дагуу"}
+    улсын байцаагч ${dotted(i.inspectors, 200)} нар <b>${esc(i.target_name)}</b>${i.target_type ? ` (${esc(i.target_type)})` : ""}${i.target_register ? `, регистрийн дугаар ${esc(i.target_register)}` : ""}-д
+    ${esc(i.inspection_type || "")} хяналт шалгалтыг «${esc(i.topic || "")}» чиглэлээр хийж, энэхүү актыг үйлдэв.</p>
+  <h2>1. Шалгалтын ерөнхий мэдээлэл</h2>
+  <table class="t">
+    <tr><th style="width:38%">Шалгагдсан этгээд</th><td>${esc(i.target_name)}${i.target_register ? ` · РД ${esc(i.target_register)}` : ""}</td></tr>
+    <tr><th>Хаяг, байршил</th><td>${esc(place || "—")}</td></tr>
+    <tr><th>Шалгалтын төрөл / чиглэл</th><td>${esc(i.inspection_type || "—")} / ${esc(i.topic || "—")}</td></tr>
+    <tr><th>Удирдамжийн дугаар</th><td>${esc(i.guideline_no || "—")}</td></tr>
+    <tr><th>Улсын байцаагч</th><td>${esc(i.inspectors || "—")}</td></tr>
+    <tr><th>Шалгалтын дүн</th><td><b>${esc(i.result)}</b>${vs.length ? ` — ${vs.length} зөрчил илэрсэн` : ""}</td></tr></table>
+  ${ck.length ? `<h2>2. Шалгах хуудасны дүн</h2><table class="t"><tr><th class="c">№</th><th>Шалгуур үзүүлэлт</th><th style="width:90pt">Хариу</th></tr>
+    ${ck.map((c, n) => `<tr><td class="c">${n + 1}</td><td>${esc(c.q)}</td><td>${c.a === "Үгүй" ? "<b>Үгүй</b>" : esc(c.a)}</td></tr>`).join("")}</table>` : ""}
+  <h2>${ck.length ? 3 : 2}. Илэрсэн зөрчил, улсын байцаагчийн шаардлага</h2>
+  ${vs.length ? `<table class="t"><tr><th class="c">№</th><th>Зөрчлийн агуулга</th><th>Зөрчсөн хууль тогтоомж, заалт</th><th>Шаардлага</th><th style="width:62pt">Арилгах хугацаа</th><th>Хариуцлага</th></tr>
+    ${vs.map((x, n) => `<tr><td class="c">${n + 1}</td><td>${esc(x.description)}</td><td>${esc(x.legal_basis || "—")}</td><td>${esc(x.requirement_type)}${x.requirement_number ? " № " + esc(x.requirement_number) : ""}</td>
+      <td>${esc(x.deadline || "—")}</td><td>${esc(x.penalty_type)}${num(x.fine_amount) ? "<br>" + money(x.fine_amount) : ""}</td></tr>`).join("")}</table>
+    <p class="ind">Дээрх зөрчлийг тогтоосон хугацаанд арилгаж, биелэлтийг нотлох баримтын хамт улсын байцаагчид хүргүүлэхийг шаардана.</p>`
+    : `<p class="ind">Хяналт шалгалтаар зөрчил илрээгүй болно.</p>`}
+  <h2>${ck.length ? 4 : 3}. Дүгнэлт</h2>
+  <p class="ind">${esc(i.conclusion || "") || dotted("", 400)}</p>
+  <p class="ind small">Шалгуулсан этгээд актын агуулгыг хүлээн зөвшөөрөхгүй бол хуульд заасан хугацаа, журмын дагуу гомдол гаргах эрхтэй.</p>
+  <table class="sign">
+    <tr><td style="width:50%">Улсын байцаагч:</td><td>${dotted("", 110)} /${esc(i.inspectors || "")}/</td></tr>
+    <tr><td>Шалгуулсан этгээдийн төлөөлөл:</td><td>${dotted("", 110)} /${dotted("", 110)}/</td></tr>
+    <tr><td>Актыг хүлээн авсан:</td><td>${ymd(null)} өдөр</td></tr></table>`;
+}
+function reqHtml(i, x, n) {
+  return `${actHeader(i)}
+  <h1>${esc(/^улсын байцаагч/i.test(x.requirement_type || "") ? x.requirement_type : "Улсын байцаагчийн " + (x.requirement_type || "албан шаардлага"))}</h1>
+  <table class="meta"><tr><td>${ymd(today())} өдөр</td><td style="text-align:center">№ ${dotted(x.requirement_number, 60)}</td><td style="text-align:right">${esc([i.aimag, i.soum].filter(Boolean).join(", "))}</td></tr></table>
+  <p><b>${esc(i.target_name)}</b>${i.target_register ? ` (РД ${esc(i.target_register)})` : ""}-ийн удирдлагад</p>
+  <p class="ind">${ymd(i.inspection_date)} өдөр ${i.act_number ? `№ ${esc(i.act_number)} актаар баталгаажсан ` : ""}гамшгаас хамгаалах улсын хяналт шалгалтаар дараах зөрчил илэрсэн тул түүнийг
+    <b>${x.deadline ? ymd(x.deadline) + " өдрийн" : dotted("", 100) + "-ны"}</b> дотор арилгаж, биелэлтийг нотлох баримтын хамт улсын байцаагчид ирүүлэхийг шаардаж байна.</p>
+  <table class="t"><tr><th class="c">№</th><th>Зөрчлийн агуулга</th><th>Зөрчсөн хууль тогтоомж, заалт</th><th style="width:70pt">Арилгах хугацаа</th></tr>
+    <tr><td class="c">${n}</td><td>${esc(x.description)}</td><td>${esc(x.legal_basis || "—")}</td><td>${esc(x.deadline || "—")}</td></tr></table>
+  ${x.penalty_type && x.penalty_type !== "Байхгүй" ? `<p class="ind">Хүлээлгэсэн хариуцлага: <b>${esc(x.penalty_type)}</b>${num(x.fine_amount) ? ` — ${money(x.fine_amount)}` : ""}.</p>` : ""}
+  <p class="ind">Шаардлагыг хугацаанд нь биелүүлээгүй тохиолдолд хууль тогтоомжид заасан хариуцлага хүлээлгэнэ.</p>
+  <table class="sign">
+    <tr><td style="width:50%">Улсын байцаагч:</td><td>${dotted("", 110)} /${esc(i.inspectors || "")}/</td></tr>
+    <tr><td>Шаардлагыг хүлээн авсан:</td><td>${dotted("", 110)} /${dotted("", 110)}/</td></tr>
+    <tr><td></td><td>${ymd(null)} өдөр</td></tr></table>`;
+}
+function docShell(title, body, forWord) {
+  return `<!DOCTYPE html><html${forWord ? ' xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"' : ""} lang="mn"><head><meta charset="utf-8"><title>${esc(title)}</title>
+    ${forWord ? "<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->" : ""}<style>${ACT_CSS}</style></head><body>${body}</body></html>`;
+}
+const pageBreak = '<br clear="all" style="page-break-before:always">';
+function actPrint(title, body) {
+  const w = window.open("", "_blank"); if (!w) return alert("Шинэ цонх нээгдсэнгүй. Хөтчийн «popup» хаалтыг зөвшөөрнө үү.");
+  w.document.write(docShell(title, body, false).replace("</body>", `<script>onload=()=>setTimeout(()=>print(),300)<\/script></body>`)); w.document.close();
+}
+function actWord(fname, title, body) {
+  const blob = new Blob(["﻿" + docShell(title, body, true)], { type: "application/msword" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fname.replace(/[\\/:*?"<>|]+/g, "_") + ".doc";
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+function actButtons(i) {
+  const vs = INS.viols[i.id] || [];
+  return `<div class="act-btns"><span class="muted">Албан баримт:</span>
+    <button class="sm" data-act="print|${i.id}">🖨 Акт — хэвлэх / PDF</button><button class="sm secondary" data-act="word|${i.id}">📘 Акт — Word</button>
+    ${vs.length ? `<button class="sm" data-act="reqprint|${i.id}">🖨 Албан шаардлага (${vs.length}) — хэвлэх / PDF</button><button class="sm secondary" data-act="reqword|${i.id}">📘 Албан шаардлага — Word</button>` : ""}</div>`;
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const [kind, id] = t.dataset.act.split("|"), i = INS.rows.find(x => String(x.id) === id); if (!i) return;
+  const vs = INS.viols[i.id] || [], nm = `${i.target_name} ${i.inspection_date}`;
+  const reqs = vs.map((x, n) => reqHtml(i, x, n + 1)).join(pageBreak);
+  if (kind === "print") actPrint("Акт — " + nm, actHtml(i));
+  if (kind === "word") actWord("Akt " + nm, "Акт — " + nm, actHtml(i));
+  if (kind === "reqprint") actPrint("Албан шаардлага — " + nm, reqs);
+  if (kind === "reqword") actWord("Alban shaardlaga " + nm, "Албан шаардлага — " + nm, reqs);
+});
+
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   БАЙЦААГЧИЙН АЖИЛ ДҮГНЭХ — ОБЕГ-ын даргын 2025 оны А/236 тушаалын журам
+   Хүснэгт 1–5 (70 оноо) + Хүснэгт 6 (10) + Хүснэгт 7 (20) = 100, үнэлгээ A–F
+   ===================================================================== */
+let EV = { ins: [], vio: [], evals: [], people: [], reqs: [], reps: [], ok: true, cur: null };
+const MONTHS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"].map(m => m + "-р сар");
+const ZONE_ORD = { 1: "НЭГДҮГЭЭР", 2: "ХОЁРДУГААР", 3: "ГУРАВДУГААР", 4: "ДӨРӨВДҮГЭЭР" };
+const DOC_KEYS = [["stop", "Ажиллагаа зогсоох"], ["sha", "ША"], ["med", "Мэдэгдэл"], ["zov", "Зөвлөмж"], ["dug", "Дүгнэлт"], ["act", "Акт"]];
+
+function zoneOfOrg(id) { const n = S.orgById[id]?.name; for (const z of [1, 2, 3, 4]) if (EVAL_ZONES[z].includes(n)) return z; return 1; }
+function gradeOf(total) { const t = Math.round(total); const g = EVAL_GRADES.find(x => t >= x[0]); return { code: g[1], name: g[2] }; }
+const pct = x => Math.round(Math.min(100, Math.max(0, x)));
+const r1 = x => Math.round(x * 10) / 10;
+const n0 = v => Math.max(0, Number(v) || 0);
+
+/* ---------- Тооцоолол (журмын 5.2) ---------- */
+function calcEval(d) {
+  const z = EVAL_NORM[d.zone] || EVAL_NORM[1];
+  const norm = n0(d.norm);
+  const done = n0(d.plan) + n0(d.unplan) + n0(d.prev);
+  const p1 = norm ? pct(done / norm * 100) : 0;                                   // 5.2.1
+  const exp2 = Math.ceil(n0(d.perfBase) * 0.8);
+  const active = done + n0(d.perf) > 0;                                           // ажил хийгээгүй бол Х2, Х3, Х5 = 0
+  const p2 = exp2 ? pct(n0(d.perf) / exp2 * 100) : (active ? 100 : 0);             // 5.2.2
+  const p3 = n0(d.found) ? pct(n0(d.fixed) / n0(d.found) * 100) : (active ? 100 : 0); // 5.2.3
+  const docs = DOC_KEYS.reduce((a, [k]) => a + n0(d.docs?.[k]), 0);
+  const target = done * z.p / 100;
+  const p4 = target ? pct(docs / target * 100) : 0;                                // 5.2.4
+  const p5 = n0(d.fReq) ? pct(n0(d.fTimes) / n0(d.fReq) * 100) : (active ? 100 : 0); // 5.2.5
+  const s = [p1 * 20, p2 * 10, p3 * 10, p4 * 10, p5 * 20].map(x => r1(x / 100));
+  const base = r1(s.reduce((a, b) => a + b, 0));                                   // 5.2.6
+  const s6 = Math.min(10, n0(d.other));                                            // 5.2.7
+  const p7 = pct(n0(d.rep)); const s7 = r1(p7 * 20 / 100);                         // 5.2.8
+  const total = r1(base + s6 + s7);
+  return { done, p1, exp2, p2, p3, docs, target: r1(target), p4, p5, s, base, s6, p7, s7, total, grade: gradeOf(total) };
+}
+
+/* ---------- Системийн бүртгэлээс оролтыг автоматаар бэлдэх ---------- */
+function autoInputs(p, y, m) {
+  const zone = zoneOfOrg(p.org_id), mm = String(m).padStart(2, "0"), inMonth = d => String(d || "").slice(0, 7) === `${y}-${mm}`;
+  const mine = EV.ins.filter(i => i.status !== "Буцаасан" && (i.inspector_ids || []).map(Number).includes(Number(p.id)));
+  const month = mine.filter(i => inMonth(i.inspection_date)), ids = new Set(month.map(i => i.id));
+  const t = x => month.filter(i => i.inspection_type === x).length;
+  const vio = EV.vio.filter(v => ids.has(v.inspection_id));
+  const docSet = {}; DOC_KEYS.forEach(([k]) => docSet[k] = new Set());
+  const typeKey = { "Улсын байцаагчийн албан шаардлага": "sha", "Албан шаардлага": "sha", "Мэдэгдэл": "med", "Зөвлөмж": "zov", "Дүгнэлт": "dug", "Акт": "act", "Ажиллагаа зогсоох тогтоол": "stop" };
+  vio.forEach(v => { const k = typeKey[v.requirement_type]; if (k) docSet[k].add(`${v.inspection_id}|${v.requirement_number || v.id}`);
+    if (v.penalty_type === "Үйл ажиллагааг түр зогсоох") docSet.stop.add(`${v.inspection_id}|p`); });
+  month.filter(i => i.act_number).forEach(i => docSet.act.add(`${i.inspection_id || i.id}|${i.act_number}`));
+  const docOrgs = new Set(vio.filter(v => typeKey[v.requirement_type]).map(v => v.inspection_id));
+  month.filter(i => i.act_number).forEach(i => docOrgs.add(i.id));
+  const perfDocOrgs = month.filter(i => i.inspection_type !== "Гүйцэтгэлийн шалгалт" && docOrgs.has(i.id)).length;
+  const allMineIds = new Set(mine.map(i => i.id));
+  const overdue = EV.vio.filter(v => allMineIds.has(v.inspection_id) && inMonth(v.deadline) && v.status !== "Арилгасан").length;
+  const complaints = month.filter(i => i.inspection_type === "Гомдол, мэдээллээр" && EV.vio.some(v => v.inspection_id === i.id)).length;
+  const fines = vio.filter(v => v.penalty_type === "Торгууль");
+  // Хүснэгт 7: тухайн сард хугацаа нь болсон тайланг хугацаанд нь ирүүлсэн хувь
+  const due = EV.reqs.filter(q => inMonth(q.due_date));
+  const onTime = due.filter(q => EV.reps.some(r => r.org_id === p.org_id && r.requirement_id === q.id && String(r.submitted_at).slice(0, 10) <= q.due_date)).length;
+  return { zone, dual: false, norm: EVAL_NORM[zone].n,
+    plan: t("Төлөвлөгөөт"), unplan: t("Төлөвлөгөөт бус") + t("Гомдол, мэдээллээр"), prev: t("Урьдчилан сэргийлэх"),
+    perf: t("Гүйцэтгэлийн шалгалт"), perfBase: perfDocOrgs,
+    found: vio.length, fixed: vio.filter(v => v.status === "Арилгасан").length,
+    docs: Object.fromEntries(DOC_KEYS.map(([k]) => [k, docSet[k].size])),
+    fTimes: fines.length, fUnits: Math.round(fines.reduce((a, v) => a + num(v.fine_amount), 0) / 1000), fReq: overdue + complaints,
+    other: 0, rep: due.length ? Math.round(onTime / due.length * 100) : 100, note: "" };
+}
+
+/* ---------- Хуудас ---------- */
+async function loadEvalsPage() {
+  const box = $("evalsBox");
+  if (!box.dataset.ready) {
+    const now = new Date();
+    box.innerHTML = `<div class="card">
+      <div class="card-h map-h"><span>Байцаагчийн ажил дүгнэх</span><span class="muted">ОБЕГ-ын даргын 2025 оны А/236 тушаалын журам</span></div>
+      <div class="filters">
+        <div><label>Он</label><select id="ev_year">${yearOptions(now.getFullYear())}</select></div>
+        <div><label>Сар</label><select id="ev_month">${MONTHS.map((t, i) => `<option value="${i + 1}" ${i === (now.getDate() >= 20 ? now.getMonth() : (now.getMonth() + 11) % 12) ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+        ${seeAll() ? `<div><label>Байгууллага</label><select id="ev_org">${orgOptions("", "Бүгд")}</select></div>` : ""}
+        <div><label>Харах</label><select id="ev_view"><option value="m">Сарын дүгнэлт</option><option value="y">Жилийн нэгтгэл, байр</option></select></div>
+        <div class="f-btns"><button id="ev_print">🖨 Маягт хэвлэх</button><button class="secondary" id="ev_report">📄 Илтгэх хуудас</button><button class="green" id="ev_xlsx">Excel</button></div></div>
+      <div id="ev_info" class="message"></div>
+      <div class="table-wrap" id="ev_table"></div>
+      <details class="ev-help"><summary>Дүгнэх аргачлал (журмын 5.2)</summary><ul>
+        <li><b>Хүснэгт 1 (20):</b> төлөвлөгөөт + төлөвлөгөөт бус + урьдчилан сэргийлэх шалгалтын тоо ÷ шалгавал зохих тоо. Зэрэглэлийн норм: 1-р 20, 2-р 15, 3-р 10, 4-р 5 байгууллага; давхар гүйцэтгэдэг бол 50% (3.4).</li>
+        <li><b>Хүснэгт 2 (10):</b> гүйцэтгэлийн шалгалтын тоо ÷ (эрх зүйн баримт бичиг гаргасан байгууллагын 80%).</li>
+        <li><b>Хүснэгт 3 (10):</b> арилгуулсан зөрчил ÷ илрүүлсэн зөрчил.</li>
+        <li><b>Хүснэгт 4 (10):</b> эрх зүйн баримт бичгийн тоо ÷ (шалгасан байгууллага × 80/70/60/50%).</li>
+        <li><b>Хүснэгт 5 (20):</b> зөрчил шалган шийдвэрлэсэн тоо ÷ шийдвэрлэх шаардлагатай тохиолдол (арилгаагүй зөрчил, гомдол мэдээлэл).</li>
+        <li><b>Хүснэгт 6 (10):</b> бусад ажил, нэгдсэн арга хэмжээ — дарга үнэлнэ. <b>Хүснэгт 7 (20):</b> мэдээ, тайланг хугацаанд нь ирүүлсэн хувь.</li>
+        <li><b>Үнэлгээ:</b> 90–100 A Маш сайн · 80–89 B Сайн · 70–79 C Хангалттай · 60–69 D Дутагдалтай · 0–59 F Хангалтгүй. Тоонуудыг системийн бүртгэлээс тооцох ба «Дүгнэх» цонхонд засаж болно.</li></ul></details></div>`;
+    box.dataset.ready = 1;
+    ["ev_year"].forEach(id => $(id).onchange = fetchEvals);
+    ["ev_month", "ev_org", "ev_view"].forEach(id => $(id) && ($(id).onchange = renderEvals));
+    $("ev_print").onclick = printEvalForms; $("ev_report").onclick = openReportSheet; $("ev_xlsx").onclick = exportEvals;
+  }
+  await fetchEvals();
+}
+async function fetchEvals() {
+  message("ev_info", "Ачаалж байна...");
+  const y = Number($("ev_year").value), [a, b] = yearRange(y);
+  try {
+    const [p, i, e, q, r] = await Promise.all([
+      S.sb.from("inspectors").select("id,org_id,full_name,position,cert_no,active").order("full_name"),
+      S.sb.from("inspections").select("id,org_id,inspection_type,inspection_date,inspector_ids,act_number,status,result,target_name,inspectors").gte("inspection_date", `${y - 1}-12-01`).lt("inspection_date", b),
+      S.sb.from("inspector_evals").select("*").eq("year", y),
+      S.sb.from("report_requirements").select("id,due_date,period,report_type").gte("due_date", a).lt("due_date", b),
+      S.sb.from("reports").select("org_id,requirement_id,submitted_at").eq("report_year", y)
+    ]);
+    if (p.error || e.error) { EV.ok = false; return message("ev_info", "Энэ хэсэг идэвхжээгүй байна. Supabase-д 5 ба 8-р алхмын SQL-ийг ажиллуулна уу.", "error"); }
+    EV.ok = true; EV.people = p.data || []; EV.ins = i.data || []; EV.evals = e.data || []; EV.reqs = q.data || []; EV.reps = r.data || [];
+    const ids = EV.ins.map(x => x.id); EV.vio = [];
+    for (let k = 0; k < ids.length; k += 300) {
+      const v = await S.sb.from("violations").select("id,inspection_id,description,legal_basis,requirement_type,requirement_number,status,deadline,penalty_type,fine_amount").in("inspection_id", ids.slice(k, k + 300));
+      EV.vio.push(...(v.data || []));
+    }
+  } catch (err) { EV.ok = false; return message("ev_info", "Алдаа: " + safeError(err), "error"); }
+  renderEvals();
+}
+function evalRows() {
+  const y = Number($("ev_year").value), m = Number($("ev_month").value), og = $("ev_org")?.value || "";
+  return EV.people.filter(p => (!og || String(p.org_id) === og) && (p.active || EV.evals.some(e => e.inspector_id === p.id && e.month === m)))
+    .map(p => { const saved = EV.evals.find(e => e.inspector_id === p.id && e.month === m);
+      const d = saved ? { ...autoInputs(p, y, m), ...saved.data, zone: saved.zone } : autoInputs(p, y, m);
+      return { p, saved, d, c: calcEval(d) }; })
+    .sort((a, b) => (S.orgById[a.p.org_id]?.sort_order || 0) - (S.orgById[b.p.org_id]?.sort_order || 0) || a.p.full_name.localeCompare(b.p.full_name));
+}
+const gradeBadge = g => `<span class="grade g-${g.code}">${g.code} · ${esc(g.name)}</span>`;
+function renderEvals() {
+  if (!EV.ok) return;
+  if ($("ev_view").value === "y") return renderEvalYear();
+  const rows = evalRows(), m = Number($("ev_month").value);
+  const appr = rows.filter(r => r.saved?.status === "Батлагдсан").length;
+  message("ev_info", rows.length ? `${MONTHS[m - 1]}: ${rows.length} байцаагч, ${appr} нь батлагдсан. «Тооцоолсон» мөр нь системийн бүртгэлээс автоматаар бодсон, хадгалаагүй дүгнэлт.` : "Байцаагч бүртгэгдээгүй байна. «Улсын байцаагч» хэсэгт нэмнэ үү.", rows.length ? "success" : "error");
+  $("ev_table").innerHTML = `<table class="ev-t"><tr><th rowspan="2">Байцаагч</th><th rowspan="2">Зэр.</th><th colspan="2">Х1 · Шалгалт (20)</th><th colspan="2">Х2 · Гүйцэтгэл (10)</th><th colspan="2">Х3 · Зөрчил (10)</th><th colspan="2">Х4 · Баримт бичиг (10)</th><th colspan="2">Х5 · Шийдвэрлэсэн (20)</th><th rowspan="2">Х1–5<br>(70)</th><th rowspan="2">Х6<br>(10)</th><th rowspan="2">Х7<br>(20)</th><th rowspan="2">Нийт</th><th rowspan="2">Үнэлгээ</th><th rowspan="2">Төлөв</th><th rowspan="2"></th></tr>
+    <tr><th>тоо</th><th>оноо</th><th>тоо</th><th>оноо</th><th>арил/илр</th><th>оноо</th><th>тоо</th><th>оноо</th><th>удаа</th><th>оноо</th></tr>
+    ${rows.map(({ p, saved, d, c }) => `<tr><td><b>${esc(p.full_name)}</b><br><span class="muted">${esc(orgName(p.org_id))}</span></td><td>${d.zone}</td>
+      <td>${c.done}/${n0(d.norm)}</td><td>${c.s[0]}</td><td>${n0(d.perf)}/${c.exp2}</td><td>${c.s[1]}</td><td>${n0(d.fixed)}/${n0(d.found)}</td><td>${c.s[2]}</td>
+      <td>${c.docs}</td><td>${c.s[3]}</td><td>${n0(d.fTimes)}</td><td>${c.s[4]}</td><td><b>${c.base}</b></td><td>${c.s6}</td><td>${c.s7}</td>
+      <td><b>${Math.round(c.total)}</b></td><td>${gradeBadge(c.grade)}</td>
+      <td>${saved ? `<span class="badge ${saved.status === "Батлагдсан" ? "b-green" : "b-amber"}">${saved.status}</span>` : '<span class="badge b-gray">Тооцоолсон</span>'}</td>
+      <td class="acts"><button class="sm ${isOrg() && saved?.status !== "Батлагдсан" ? "" : "secondary"}" data-ev-open="${p.id}">${isOrg() && saved?.status !== "Батлагдсан" ? "Дүгнэх" : "Харах"}</button></td></tr>`).join("")
+      || '<tr><td colspan="19" class="muted">Мэдээлэл алга.</td></tr>'}</table>`;
+}
+function renderEvalYear() {
+  const y = Number($("ev_year").value), og = $("ev_org")?.value || "";
+  const by = {};
+  EV.evals.filter(e => e.status === "Батлагдсан" && (!og || String(e.org_id) === og)).forEach(e => (by[e.inspector_id] = by[e.inspector_id] || []).push(e));
+  const rows = Object.entries(by).map(([id, list]) => { const p = EV.people.find(x => String(x.id) === id) || { full_name: "—", org_id: list[0].org_id };
+    const avg = r1(list.reduce((a, e) => a + Number(e.score), 0) / list.length); return { p, n: list.length, avg, g: gradeOf(avg), months: list.map(e => e.month).sort((a, b) => a - b) }; })
+    .sort((a, b) => b.avg - a.avg);
+  message("ev_info", `${y} он: батлагдсан сарын дүгнэлтийн дунджаар эрэмбэлэв (журмын 6.1). Жилийн үнэлгээнд журмын 5.5-д заасан 5 хүртэлх нэмэлт оноог Ерөнхий газар тусад нь нэмнэ.`, "success");
+  $("ev_table").innerHTML = `<table><tr><th>Байр</th><th>Байцаагч</th><th>Байгууллага</th><th>Зэрэглэл</th><th>Дүгнэсэн сар</th><th>Дундаж оноо</th><th>Үнэлгээ</th></tr>
+    ${rows.map((r, i) => `<tr><td><b>${i + 1}</b></td><td><b>${esc(r.p.full_name)}</b></td><td>${esc(orgName(r.p.org_id))}</td><td>${zoneOfOrg(r.p.org_id)}</td>
+      <td>${r.n} <span class="muted">(${r.months.join(", ")})</span></td><td><b>${r.avg}</b></td><td>${gradeBadge(r.g)}</td></tr>`).join("")
+      || '<tr><td colspan="7" class="muted">Энэ онд батлагдсан дүгнэлт алга.</td></tr>'}</table>`;
+}
+
+/* ---------- Дүгнэх цонх ---------- */
+function openEvalForm(pid) {
+  const y = Number($("ev_year").value), m = Number($("ev_month").value);
+  const row = evalRows().find(r => String(r.p.id) === String(pid)); if (!row) return;
+  const { p, saved } = row, d = JSON.parse(JSON.stringify(row.d));
+  const editable = (isOrg() && p.org_id === S.profile.org_id && saved?.status !== "Батлагдсан");
+  EV.cur = { p, saved, d, y, m };
+  const inp = (k, v, extra = "") => `<input type="number" min="0" step="1" data-k="${k}" value="${v ?? 0}" ${editable ? "" : "disabled"} ${extra}>`;
+  openModal(`${esc(p.full_name)} — ${y} он, ${MONTHS[m - 1]}`, `
+    <p class="muted">${esc(orgName(p.org_id))} · Тоонууд системийн бүртгэлээс автоматаар бодогдсон. Шаардлагатай бол засна.</p>
+    <div class="grid g3"><div><label>Зэрэглэл</label><select data-k="zone" ${editable ? "" : "disabled"}>${[1, 2, 3, 4].map(z => `<option value="${z}" ${d.zone == z ? "selected" : ""}>${z}-р зэрэглэл (норм ${EVAL_NORM[z].n}, ${EVAL_NORM[z].p}%)</option>`).join("")}</select></div>
+      <div><label>Шалгавал зохих байгууллага</label>${inp("norm", d.norm)}</div>
+      <div><label class="chk" style="margin-top:30px"><input type="checkbox" data-k="dual" ${d.dual ? "checked" : ""} ${editable ? "" : "disabled"}> Үүргийг давхар гүйцэтгэдэг (норм 50%)</label></div></div>
+    <fieldset><legend>Хүснэгт 1 — Хяналт, шалгалт (20 оноо)</legend><div class="grid g3">
+      <div><label>Төлөвлөгөөт</label>${inp("plan", d.plan)}</div><div><label>Төлөвлөгөөт бус</label>${inp("unplan", d.unplan)}</div><div><label>Урьдчилан сэргийлэх</label>${inp("prev", d.prev)}</div></div></fieldset>
+    <fieldset><legend>Хүснэгт 2 — Гүйцэтгэлийн хяналт шалгалт (10 оноо)</legend><div class="grid">
+      <div><label>Гүйцэтгэлийн шалгалт хийсэн</label>${inp("perf", d.perf)}</div><div><label>Эрх зүйн баримт бичиг гаргасан байгууллага</label>${inp("perfBase", d.perfBase)}</div></div></fieldset>
+    <fieldset><legend>Хүснэгт 3 — Зөрчил (10 оноо)</legend><div class="grid">
+      <div><label>Илрүүлсэн</label>${inp("found", d.found)}</div><div><label>Арилгуулсан</label>${inp("fixed", d.fixed)}</div></div></fieldset>
+    <fieldset><legend>Хүснэгт 4 — Байцаагчийн эрх зүйн баримт бичиг (10 оноо)</legend><div class="grid g3">
+      ${DOC_KEYS.map(([k, t]) => `<div><label>${t}</label>${inp("docs." + k, d.docs?.[k])}</div>`).join("")}</div></fieldset>
+    <fieldset><legend>Хүснэгт 5 — Зөрчил шалган шийдвэрлэсэн байдал (20 оноо)</legend><div class="grid g3">
+      <div><label>Шийдвэрлэсэн (хэдэн удаа)</label>${inp("fTimes", d.fTimes)}</div><div><label>Торгууль (хэдэн нэгж)</label>${inp("fUnits", d.fUnits)}</div><div><label>Шийдвэрлэх шаардлагатай тохиолдол</label>${inp("fReq", d.fReq)}</div></div></fieldset>
+    <fieldset><legend>Хүснэгт 6, 7</legend><div class="grid">
+      <div><label>Х6 · Бусад ажил, нэгдсэн арга хэмжээ (0–10 оноо)</label>${inp("other", d.other, 'max="10"')}</div>
+      <div><label>Х7 · Мэдээ, тайлан хугацаандаа ирүүлсэн хувь (%)</label>${inp("rep", d.rep, 'max="100"')}</div></div></fieldset>
+    <label>Тайлбар</label><textarea data-k="note" ${editable ? "" : "disabled"}>${esc(d.note || "")}</textarea>
+    <div id="ev_calc" class="ev-calc"></div>
+    <div class="actions">${editable ? `<button id="ev_save" class="secondary">Ноорог хадгалах</button><button id="ev_appr">Батлах</button>` : ""}
+      ${isAdmin() && saved?.status === "Батлагдсан" ? '<button class="secondary" id="ev_reopen">Ноорог болгох (засуулах)</button>' : ""}
+      ${isAdmin() && saved ? '<button class="danger" id="ev_del">Устгах</button>' : ""}<button class="secondary" onclick="closeModal()">Хаах</button></div>
+    <div id="ev_msg" class="message"></div>`, true);
+  const readForm = () => { document.querySelectorAll("#modalBody [data-k]").forEach(el => { const k = el.dataset.k;
+      const v = el.type === "checkbox" ? el.checked : el.tagName === "TEXTAREA" ? el.value : Number(el.value);
+      if (k.startsWith("docs.")) (d.docs = d.docs || {})[k.slice(5)] = v; else d[k] = v; }); };
+  const show = () => { readForm(); const c = calcEval(d);
+    $("ev_calc").innerHTML = `<table class="compact"><tr><th>Х1</th><th>Х2</th><th>Х3</th><th>Х4</th><th>Х5</th><th>Х1–5</th><th>Х6</th><th>Х7</th><th>Нийт</th><th>Үнэлгээ</th></tr>
+      <tr><td>${c.s[0]} <span class="muted">(${c.p1}%)</span></td><td>${c.s[1]} <span class="muted">(${c.p2}%)</span></td><td>${c.s[2]} <span class="muted">(${c.p3}%)</span></td><td>${c.s[3]} <span class="muted">(${c.p4}%)</span></td><td>${c.s[4]} <span class="muted">(${c.p5}%)</span></td>
+      <td><b>${c.base}</b></td><td>${c.s6}</td><td>${c.s7}</td><td><b>${Math.round(c.total)}</b></td><td>${gradeBadge(c.grade)}</td></tr></table>`; };
+  const zoneSel = document.querySelector('#modalBody [data-k="zone"]'), dualChk = document.querySelector('#modalBody [data-k="dual"]');
+  const resetNorm = () => { const z = Number(zoneSel.value); document.querySelector('#modalBody [data-k="norm"]').value = Math.ceil(EVAL_NORM[z].n * (dualChk.checked ? 0.5 : 1)); };
+  if (editable) { zoneSel.onchange = () => { resetNorm(); show(); }; dualChk.onchange = () => { resetNorm(); show(); }; }
+  document.querySelectorAll("#modalBody [data-k]").forEach(el => el.addEventListener("input", show));
+  show();
+  const save = async status => {
+    readForm(); const c = calcEval(d);
+    if (status === "Батлагдсан" && !confirm(`${p.full_name}: ${Math.round(c.total)} оноо, ${c.grade.code} (${c.grade.name}). Батлах уу? Батласны дараа засах боломжгүй.`)) return;
+    const row = { org_id: p.org_id, inspector_id: p.id, year: y, month: m, zone: Number(d.zone), data: d, score: c.total, grade: c.grade.code, status,
+      approved_by: status === "Батлагдсан" ? (S.profile.full_name || S.user.email) : null };
+    const q = saved ? S.sb.from("inspector_evals").update(row).eq("id", saved.id) : S.sb.from("inspector_evals").insert(row);
+    const { error } = await q;
+    if (error) return message("ev_msg", "Алдаа: " + safeError(error), "error");
+    closeModal(); fetchEvals();
+  };
+  if ($("ev_save")) $("ev_save").onclick = () => save("Ноорог");
+  if ($("ev_appr")) $("ev_appr").onclick = () => save("Батлагдсан");
+  if ($("ev_reopen")) $("ev_reopen").onclick = async () => { const { error } = await S.sb.from("inspector_evals").update({ status: "Ноорог", approved_by: null, approved_at: null }).eq("id", saved.id); if (error) return message("ev_msg", safeError(error), "error"); closeModal(); fetchEvals(); };
+  if ($("ev_del")) $("ev_del").onclick = async () => { if (!confirm("Энэ дүгнэлтийг устгах уу?")) return; const { error } = await S.sb.from("inspector_evals").delete().eq("id", saved.id); if (error) return message("ev_msg", safeError(error), "error"); closeModal(); fetchEvals(); };
+}
+document.addEventListener("click", e => { const t = e.target.closest("[data-ev-open]"); if (t) openEvalForm(t.dataset.evOpen); });
+
+/* ---------- Маягт 1–4 хэвлэх (журмын хавсралт 2–5) ---------- */
+function printEvalForms() {
+  const y = Number($("ev_year").value), m = Number($("ev_month").value), rows = evalRows();
+  if (!rows.length) return alert("Хэвлэх мэдээлэл алга.");
+  const byZone = {}; rows.forEach(r => (byZone[r.d.zone] = byZone[r.d.zone] || []).push(r));
+  const pages = Object.keys(byZone).sort().map(z => { const N = EVAL_NORM[z];
+    return `<div class="hd"><h1>ГАМШГААС ХАМГААЛАХ УЛСЫН ХЯНАЛТЫН БАЙЦААГЧИЙН<br>АЖИЛ ДҮГНЭХ МАЯГТ ${z} (${ZONE_ORD[z]} ЗЭРЭГЛЭЛ)</h1><p>${y} оны ${m} ${[1, 4, 9, 11].includes(m) ? "дүгээр" : "дугаар"} сар</p></div>
+    <table class="t ev-print"><tr><th rowspan="3">Аймаг, нийслэлийн нэр</th><th rowspan="3">Байцаагчийн цол, овог нэр</th><th colspan="23">Сард хийсэн ажлын үзүүлэлт</th><th rowspan="3">Хувь</th><th rowspan="3">Үнэлгээ</th></tr>
+      <tr><th colspan="5">Хяналт, шалгалт · 20 оноо</th><th colspan="2">Гүйцэтгэл · 10 оноо</th><th colspan="3">Зөрчил · 10 оноо</th><th colspan="7">Эрх зүйн баримт бичиг (${N.p} хувь) · 10 оноо</th><th colspan="3">Зөрчил шалган шийдвэрлэсэн · 20 оноо</th><th>Үндсэн 5 хүснэгт · 70</th><th>Бусад ажил · 10</th><th>Мэдээ тайлан · 20</th></tr>
+      <tr><th>Шалгавал зохих</th><th>Төлөв&shy;лөгөөт</th><th>Төлөв&shy;лөгөөт бус</th><th>Урьдчилан сэргийлэх</th><th>Хувь</th><th>Гүйцэт&shy;гэлийн (80%)</th><th>Хувь</th><th>Илрүүлсэн</th><th>Арилгуулсан</th><th>Хувь</th>
+        <th>Ажил&shy;лагаа зогсоох</th><th>ША</th><th>Мэдэгдэл</th><th>Зөвлөмж</th><th>Дүгнэлт</th><th>Акт</th><th>Хувь</th><th>Хэдэн удаа</th><th>Хэдэн нэгжээр</th><th>Хувь</th><th>Хүснэгт 1–5</th><th>Хүснэгт 6</th><th>Хүснэгт 7</th></tr>
+      ${byZone[z].map(({ p, d, c }) => `<tr><td rowspan="2">${esc(orgName(p.org_id))}</td><td rowspan="2">${esc(p.position ? p.position + " " : "")}${esc(p.full_name)}</td>
+        <td>${n0(d.norm)}</td><td>${n0(d.plan)}</td><td>${n0(d.unplan)}</td><td>${n0(d.prev)}</td><td>${c.p1}</td><td>${n0(d.perf)}</td><td>${c.p2}</td><td>${n0(d.found)}</td><td>${n0(d.fixed)}</td><td>${c.p3}</td>
+        ${DOC_KEYS.map(([k]) => `<td>${n0(d.docs?.[k]) || "-"}</td>`).join("")}<td>${c.p4}</td><td>${n0(d.fTimes)}</td><td>${n0(d.fUnits)}</td><td>${c.p5}</td>
+        <td rowspan="2">${c.base}</td><td rowspan="2">${c.s6}</td><td rowspan="2">${c.s7}</td><td rowspan="2"><b>${Math.round(c.total)}</b></td><td rowspan="2"><b>${c.grade.code}</b></td></tr>
+        <tr class="sc"><td colspan="5">Оноо: ${c.s[0]}</td><td colspan="2">${c.s[1]}</td><td colspan="3">${c.s[2]}</td><td colspan="7">${c.s[3]}</td><td colspan="3">${c.s[4]}</td></tr>`).join("")}</table>
+    <table class="sign"><tr><td>ДҮГНЭСЭН:</td></tr><tr><td>............................ ДАРГА, /...................................../ ......................................./</td></tr>
+      <tr><td class="small">Байгууллагын нэр &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (цол, гарын үсэг) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (гарын үсгийн тайлал)</td></tr><tr><td>(огноо) /............................../</td></tr></table>`; }).join(pageBreak);
+  const css = `@page{size:A4 landscape;margin:12mm}.hd{text-align:center}.hd h1{font-size:13pt;margin:0 0 4pt}.hd p{text-align:center;margin:0 0 8pt}
+    table.ev-print th,table.ev-print td{font-size:8.5pt;padding:2pt 3pt;text-align:center}table.ev-print tr.sc td{background:#f3f3f3;font-weight:bold}`;
+  const w = window.open("", "_blank"); if (!w) return alert("Шинэ цонх нээгдсэнгүй. Хөтчийн «popup» хаалтыг зөвшөөрнө үү.");
+  w.document.write(docShell("Байцаагчийн ажил дүгнэх маягт", pages, false).replace("</style>", css + "</style>").replace("</body>", `<script>onload=()=>setTimeout(()=>print(),300)<\/script></body>`)); w.document.close();
+}
+function exportEvals() {
+  const y = $("ev_year").value, m = $("ev_month").value;
+  exportExcel(`baitsaagch_dugnelt_${y}_${m}.xlsx`, [{ name: `${y}-${m}`, rows: [["Байгууллага", "Байцаагч", "Зэрэглэл", "Шалгавал зохих", "Төлөвлөгөөт", "Төлөвлөгөөт бус", "Урьдчилан сэргийлэх", "Х1 %", "Гүйцэтгэлийн", "Х2 %", "Илрүүлсэн", "Арилгуулсан", "Х3 %",
+    ...DOC_KEYS.map(x => x[1]), "Х4 %", "Шийдвэрлэсэн удаа", "Нэгж", "Х5 %", "Х1", "Х2", "Х3", "Х4", "Х5", "Х1–5", "Х6", "Х7", "Нийт", "Үнэлгээ", "Төлөв"],
+    ...evalRows().map(({ p, saved, d, c }) => [orgName(p.org_id), p.full_name, d.zone, n0(d.norm), n0(d.plan), n0(d.unplan), n0(d.prev), c.p1, n0(d.perf), c.p2, n0(d.found), n0(d.fixed), c.p3,
+      ...DOC_KEYS.map(([k]) => n0(d.docs?.[k])), c.p4, n0(d.fTimes), n0(d.fUnits), c.p5, ...c.s, c.base, c.s6, c.s7, Math.round(c.total), c.grade.code, saved?.status || "Тооцоолсон"])] }]);
+}
+
+/* ---------- Хяналт шалгалт хийсэн илтгэх хуудас (журмын хавсралт 6) ---------- */
+function openReportSheet() {
+  const y = Number($("ev_year").value), m = Number($("ev_month").value), mm = String(m).padStart(2, "0");
+  const last = new Date(y, m, 0).getDate();
+  openModal("Хяналт шалгалт хийсэн илтгэх хуудас", `
+    ${seeAll() ? `<label>Байгууллага *</label><select id="rs_org">${orgOptions($("ev_org")?.value || "", "— сонгох —")}</select>` : ""}
+    <div class="grid"><div><label>Эхлэх огноо</label><input type="date" id="rs_from" value="${y}-${mm}-01"></div><div><label>Дуусах огноо</label><input type="date" id="rs_to" value="${y}-${mm}-${last}"></div></div>
+    <label>Шалгалтын объект, чиглэл</label><input id="rs_obj" placeholder="жишээ: Худалдааны төвийн барилга байгууламж">
+    <label>Удирдамж, төлөвлөгөөний нэр</label><input id="rs_plan" placeholder="жишээ: ... хяналт шалгалтын удирдамж">
+    <div class="actions"><button id="rs_print">🖨 Хэвлэх / PDF</button><button class="secondary" id="rs_word">📘 Word</button></div><div id="rs_msg" class="message"></div>`);
+  const build = () => {
+    const org = seeAll() ? Number($("rs_org").value) : S.profile.org_id;
+    if (!org) { message("rs_msg", "Байгууллагаа сонгоно уу.", "error"); return null; }
+    const from = $("rs_from").value, to = $("rs_to").value;
+    const ins = EV.ins.filter(i => i.org_id === org && i.status !== "Буцаасан" && i.inspection_date >= from && i.inspection_date <= to), ids = new Set(ins.map(i => i.id));
+    const vio = EV.vio.filter(v => ids.has(v.inspection_id));
+    const cnt = t => new Set(vio.filter(v => v.requirement_type === t).map(v => `${v.inspection_id}|${v.requirement_number || v.id}`)).size;
+    const acts = new Set([...ins.filter(i => i.act_number).map(i => i.id), ...vio.filter(v => v.requirement_type === "Акт").map(v => v.inspection_id)]).size;
+    const stop = cnt("Ажиллагаа зогсоох тогтоол") + new Set(vio.filter(v => v.penalty_type === "Үйл ажиллагааг түр зогсоох").map(v => v.inspection_id)).size;
+    const fines = Math.round(vio.filter(v => v.penalty_type === "Торгууль").reduce((a, v) => a + num(v.fine_amount), 0) / 1000);
+    const fined = new Set(vio.filter(v => v.penalty_type === "Торгууль").map(v => v.inspection_id)).size;
+    const common = {}; vio.forEach(v => { const k = (v.legal_basis || v.description || "").trim(); if (k) common[k] = (common[k] || 0) + 1; });
+    const top = Object.entries(common).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const people = [...new Set(ins.flatMap(i => (i.inspector_ids || []).map(Number)))].map(id => EV.people.find(p => p.id === id)).filter(Boolean);
+    const o = S.orgById[org], orgT = o ? (o.kind === "aimag" ? `${o.name} аймгийн` : o.name.endsWith(" дүүрэг") ? `${o.name.replace(/ дүүрэг$/, "")} дүүргийн` : "") : "";
+    const nums = [ins.length, vio.length, vio.filter(v => v.status === "Арилгасан").length, cnt("Улсын байцаагчийн албан шаардлага") + cnt("Албан шаардлага"), cnt("Мэдэгдэл"), cnt("Танилцуулга"), cnt("Дүгнэлт"), acts, cnt("Зөвлөмж"), stop, fines];
+    const obj = $("rs_obj").value.trim(), plan = $("rs_plan").value.trim();
+    return { title: "Илтгэх хуудас", body: `<div class="hd"><div class="org">${esc((orgT ? orgT.toUpperCase() + " " : "") + "ОНЦГОЙ БАЙДЛЫН ГАЗАР")}</div></div>
+      <h1>Илтгэх хуудас</h1>
+      <p style="text-align:center"><b>${esc(obj || "....................")}</b>-д гамшгаас хамгаалах тухай хууль тогтоомжийн хэрэгжилтийг хангуулах хяналт шалгалт зохион байгуулсан тухай</p>
+      <table class="meta"><tr><td>${ymd(today())} өдөр</td><td style="text-align:right">${esc(o?.aimag || "")}</td></tr></table>
+      <h2 style="text-align:center">Нэг. Удирдлага, зохион байгуулалт</h2>
+      <p class="ind">${plan ? `«${esc(plan)}»-ийн дагуу` : "Батлагдсан удирдамж, төлөвлөгөөний дагуу"} Гамшгаас хамгаалах тухай хууль, Төрийн хяналт шалгалтын тухай хууль, Зөрчлийн тухай хууль, Зөрчил шалган шийдвэрлэх тухай хууль болон холбогдох дүрэм, журмын хэрэгжилтийг хангах хяналт шалгалтыг ${ymd(from)} өдрөөс ${ymd(to)} өдрийг хүртэл зохион байгуулан ажиллалаа.</p>
+      <p class="ind">Хяналт шалгалтад гамшгаас хамгаалах улсын хяналтын байцаагч ${people.length ? esc(people.map(p => p.full_name).join(", ")) : dotted("", 200)} нар, нийт ${people.length || "....."} алба хаагч оролцов.</p>
+      <h2 style="text-align:center">Хоёр. Хяналт шалгалтын талаар</h2>
+      <p class="ind">Нийт ${nums[0]} байгууллагад хяналт шалгалт зохион байгуулж, ${nums[1]} зөрчил илрүүлж, ${nums[2]} зөрчлийг арилгуулж, албан шаардлага – ${nums[3]}, мэдэгдэл – ${nums[4]}, танилцуулга – ${nums[5]}, акт – ${nums[7]}, зөвлөмж – ${nums[8]}, дүгнэлт – ${nums[6]}-ыг гаргаж, ${fined} иргэн, хуулийн этгээдийг ${fines} нэгжээр торгосон.</p>
+      <p><b>2.1. Тоон үзүүлэлтийн талаар:</b></p>
+      <table class="t"><tr><th>д/д</th><th>Аймаг, нийслэлийн ОБГ</th><th>Шалгасан иргэн, хуулийн этгээд</th><th>Илрүүлсэн зөрчил</th><th>Арилгуулсан зөрчил</th><th>Албан шаардлага</th><th>Мэдэгдэл</th><th>Танилцуулга</th><th>Дүгнэлт</th><th>Акт</th><th>Зөвлөмж</th><th>Ажиллагаа зогсоох тогтоол</th><th>Торгуулийн дүн (нэгжээр)</th></tr>
+        <tr><td class="c"></td><td></td>${nums.map((_, i) => `<td class="c">${i + 1}</td>`).join("")}</tr>
+        <tr><td class="c">1</td><td>${esc(orgTitle(org))}</td>${nums.map(n => `<td class="c">${n || "-"}</td>`).join("")}</tr></table>
+      <p><b>2.2. Шалгалтаар илэрсэн нийтлэг зөрчлийн талаар:</b></p>
+      ${top.length ? top.map(([k, n], i) => `<p class="ind">2.2.${i + 1}. ${esc(k)} — ${n}</p>`).join("") : `<p class="ind">${dotted("", 400)}</p>`}
+      <h2 style="text-align:center">Гурав. Хүрсэн үр дүн, цаашид авах арга хэмжээний санал, дүгнэлт</h2>
+      <p class="ind">${dotted("", 420)}</p>
+      <p class="ind">Илтгэх хуудсанд хавсралтаар холбогдох судалгаа, шалгалтын явц байдлын талаарх баримтжуулсан гэрэл зургийг хавсаргав.</p>
+      <p>Хавсралт 1. Шалгалтад хамрагдсан байгууллагын мэдээлэл<br>Хавсралт 2. Шалгалтын явц байдлыг гэрэл зураг (хуудасны тоо ...)</p>
+      <table class="sign"><tr><td style="width:55%">ТАНИЛЦСАН:<br>ОНЦГОЙ БАЙДЛЫН ГАЗРЫН ДАРГА</td><td>${dotted("", 110)} /${dotted("", 110)}/</td></tr>
+        <tr><td>ХЯНАСАН:<br>ГАЗРЫН ОРЛОГЧ, УРЬДЧИЛАН СЭРГИЙЛЭХ ТАСГИЙН ДАРГА</td><td>${dotted("", 110)} /${dotted("", 110)}/</td></tr>
+        <tr><td>ИЛТГЭХ ХУУДАС БИЧСЭН:<br>ГАМШГААС ХАМГААЛАХ УЛСЫН ХЯНАЛТЫН БАЙЦААГЧ</td><td>${dotted("", 110)} /${dotted("", 110)}/</td></tr></table>` };
+  };
+  $("rs_print").onclick = () => { const r = build(); if (r) actPrint(r.title, r.body); };
+  $("rs_word").onclick = () => { const r = build(); if (r) actWord("Iltgeh huudas " + $("rs_from").value, r.title, r.body); };
+}
+
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   И-МЭЙЛ МЭДЭГДЭЛ: хэрэглэгч бүр мэдэгдэл авах хаягаа тохируулна
+   ===================================================================== */
+const MAIL = { st: null, ok: null };
+
+async function mailStatus() {
+  const { data, error } = await S.sb.rpc("mail_status");
+  MAIL.ok = !error; MAIL.st = error ? null : data;
+  return MAIL.st;
+}
+/* Dashboard дээр: аймаг мэдэгдэл авах и-мэйлээ оруулаагүй бол сануулна */
+async function refreshMailBar() {
+  const bar = $("mailBar"); if (!bar) return;
+  try { await mailStatus(); } catch (e) { MAIL.ok = false; }
+  bar.classList.toggle("hidden", !(MAIL.ok && isOrg() && currentPage !== "notify" && !(MAIL.st.effective || []).length));
+}
+
+async function loadNotifyPage() {
+  const box = $("notifyBox");
+  box.innerHTML = '<div class="card"><p class="muted">Ачаалж байна...</p></div>';
+  $("mailBar")?.classList.add("hidden");
+  let st;
+  try { st = await mailStatus(); } catch (e) { st = null; }
+  if (!MAIL.ok) { box.innerHTML = '<div class="card"><div class="note-red">И-мэйл мэдэгдлийн хэсэг хараахан идэвхжээгүй байна. Supabase-д <b>6-р алхмын SQL</b>-ийг ажиллуулна уу.</div></div>'; return; }
+  const events = isAdmin()
+    ? ["Аймаг шинэ тайлан илгээх, буцаагдсан тайлангаа засаж дахин илгээх", "Шинэ гамшиг, осол бүртгэгдэх", "Өдөр бүр 09:00-д: хянагдаагүй бүртгэлийн тойм"]
+    : ["Тайлан баталгаажих / буцаагдах (шалтгаантай)", "Гамшиг, осол, хяналт шалгалтын бүртгэл баталгаажих / буцаагдах", "Тайлангийн хугацаа дуусахаас 3 хоног, 1 хоногийн өмнө, дуусах өдөр, хэтэрсэн үед", "Зөрчил арилгах хугацаа дуусахаас 3 хоногийн өмнө"];
+  const fake = /@example\.org$/i.test(st.login_email || "");
+  box.innerHTML = `<div class="card notify-card">
+    <div class="card-h">🔔 И-мэйл мэдэгдэл</div>
+    ${st.configured ? "" : `<div class="note-amber">И-мэйл илгээх үйлчилгээг ${isAdmin() ? "та SQL-ийн <b>7-р алхмаар</b> тохируулна" : "Ерөнхий газар хараахан тохируулаагүй байна"}. Хаягаа одоо оруулж хадгалж болно — тохируулмагц мэдэгдэл ирж эхэлнэ.</div>`}
+    <p>Дараах үед и-мэйл ирнэ:</p><ul class="ev-list">${events.map(e => `<li>${esc(e)}</li>`).join("")}</ul>
+    ${fake && !(st.emails || []).length ? '<div class="note-red">Таны нэвтрэх хаяг түр хаяг тул мэдэгдэл хүрэхгүй. Доор <b>бодит и-мэйл хаягаа</b> оруулна уу.</div>' : ""}
+    <label>Мэдэгдэл авах и-мэйл хаяг(ууд) <span class="muted">— хэд хэдэн бол таслалаар (,) тусгаарлана, 5 хүртэл</span></label>
+    <input id="nm_emails" type="email" multiple inputmode="email" autocomplete="email" placeholder="жишээ: hyanalt.arkhangai@gmail.com" value="${esc((st.emails && st.emails.length ? st.emails : st.effective || []).join(", "))}">
+    <label class="chk"><input type="checkbox" id="nm_on" ${st.enabled ? "checked" : ""}> Мэдэгдэл авах</label>
+    <div class="actions"><button id="nm_save">Хадгалах</button><button class="secondary" id="nm_test">Туршилтын и-мэйл илгээх</button></div>
+    <div id="nm_msg" class="message"></div>
+    <p class="muted">Одоо мэдэгдэл очих хаяг: <b id="nm_eff">${esc((st.effective || []).join(", ") || "— байхгүй —")}</b>. Захидал ирэхгүй бол <b>Spam / Promotions</b> хавтсаа шалгаарай.</p>
+  </div>
+  ${isAdmin() ? `<div class="card"><div class="card-h">Байгууллагуудын мэдэгдэл хүлээн авах байдал</div><div id="nm_cov" class="table-wrap"><p class="muted">Ачаалж байна...</p></div></div>
+    <div class="card"><div class="card-h">Сүүлийн илгээлтүүд</div><div id="nm_hist" class="table-wrap"><p class="muted">Ачаалж байна...</p></div></div>` : ""}`;
+  $("nm_save").onclick = async () => {
+    const emails = $("nm_emails").value.split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
+    const bad = emails.find(x => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
+    if (bad) return message("nm_msg", "И-мэйл буруу байна: " + bad, "error");
+    $("nm_save").disabled = true;
+    const { data, error } = await S.sb.rpc("mail_save", { p_emails: emails, p_enabled: $("nm_on").checked });
+    $("nm_save").disabled = false;
+    if (error) return message("nm_msg", "Алдаа: " + safeError(error), "error");
+    MAIL.st = data; $("nm_eff").textContent = (data.effective || []).join(", ") || "— байхгүй —";
+    message("nm_msg", "Хадгаллаа.", "success"); refreshMailBar();
+  };
+  $("nm_test").onclick = async () => {
+    $("nm_test").disabled = true; message("nm_msg", "Илгээж байна...");
+    const { data, error } = await S.sb.rpc("mail_test");
+    $("nm_test").disabled = false;
+    if (error) return message("nm_msg", safeError(error), "error");
+    message("nm_msg", `Туршилтын и-мэйл илгээлээ: ${data}. 1–2 минутын дотор ирнэ.`, "success");
+  };
+  if (isAdmin()) loadMailAdmin();
+}
+async function loadMailAdmin() {
+  const [c, h] = await Promise.all([S.sb.rpc("mail_coverage"), S.sb.rpc("mail_history")]);
+  if (c.error) $("nm_cov").innerHTML = `<p class="error">${esc(safeError(c.error))}</p>`;
+  else {
+    const rows = c.data || [], none = rows.filter(r => !r.recipients);
+    $("nm_cov").innerHTML = `<p>${rows.length - none.length} / ${rows.length} байгууллага мэдэгдэл хүлээн авах хаягтай.${none.length ? ' <span class="red">Хаяггүй байгууллагад мэдэгдэл очихгүй.</span>' : ""}</p>
+      <div class="cov">${rows.map(r => `<span class="cov-i ${r.recipients ? "ok" : "no"}">${r.recipients ? "✅" : "⛔"} ${esc(r.org_name)}${r.recipients > 1 ? ` (${r.recipients})` : ""}</span>`).join("")}</div>`;
+  }
+  if (h.error) $("nm_hist").innerHTML = `<p class="error">${esc(safeError(h.error))}</p>`;
+  else $("nm_hist").innerHTML = `<table class="compact"><tr><th>Огноо</th><th>Хүлээн авагч</th><th>Гарчиг</th><th>Үр дүн</th></tr>${(h.data || []).map(r => `<tr><td>${esc(dtstr(r.at))}</td><td>${esc((r.recipients || []).join(", "))}</td><td>${esc(r.subject)}</td>
+    <td>${r.status == null ? '<span class="muted">хүлээгдэж байна</span>' : r.status < 300 ? '<span class="badge b-green">Илгээсэн</span>' : `<span class="badge b-red">Алдаа ${r.status}</span><br><span class="muted">${esc(r.error || "")}</span>`}</td></tr>`).join("")
+    || '<tr><td colspan="4" class="muted">Илгээлт алга.</td></tr>'}</table>`;
 }
 
 </script>
